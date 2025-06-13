@@ -89,10 +89,10 @@ class TaskController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'priority' => 'required|in:low,normal,high,urgent',
-            'size_id' => 'nullable|exists:tasks_management.task_sizes,id',
+            'size_id' => 'nullable|exists:task_sizes,id', // убрали префикс
             'estimated_hours' => 'nullable|numeric|min:0.25|max:1000',
-            'status_id' => 'required|exists:tasks_management.status,id',
-            'project_id' => 'nullable|exists:tasks_management.projects,id',
+            'status_id' => 'required|exists:statuses,id', // убрали префикс (и исправили на statuses)
+            'project_id' => 'nullable|exists:projects,id', // убрали префикс
             'start_date' => 'nullable|date',
             'due_date' => 'nullable|date|after_or_equal:start_date',
             'assignees' => 'nullable|array',
