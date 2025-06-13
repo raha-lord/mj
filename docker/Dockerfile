@@ -9,7 +9,14 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    libpq-dev
+    libpq-dev \
+    gnupg \
+    ca-certificates \
+    lsb-release
+
+# Install Node.js 18
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -26,6 +33,13 @@ WORKDIR /var/www
 # Set permissions
 RUN chown -R www-data:www-data /var/www
 
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Expose port
 EXPOSE 9000
 
+# Default command
 CMD ["php-fpm"]

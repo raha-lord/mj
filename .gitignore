@@ -1,0 +1,57 @@
+# Laravel / PHP
+/vendor
+/node_modules
+/.env
+/.env.*.php
+Homestead.yaml
+Homestead.json
+.env.backup
+.env.example.local
+
+# Laravel specific
+/storage/*.key
+/storage/*.log
+/storage/*.txt
+/storage/debugbar
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
+/bootstrap/cache/*
+
+# Ignored cache and compiled files
+/public/storage
+/public/hot
+/public/mix-manifest.json
+/public/build
+/public/js/*.map
+/public/css/*.map
+
+# Vite / Mix
+/.vite
+/.vite-inspect
+
+# PHPUnit
+.phpunit.result.cache
+
+# IDE / Editors
+.idea
+.vscode
+*.sublime-workspace
+*.sublime-project
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Composer PHAR
+composer.phar
+
+# npm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+docker-compose.override.yml
