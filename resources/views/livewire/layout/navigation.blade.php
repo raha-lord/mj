@@ -1,10 +1,18 @@
 <?php
 
 use App\Livewire\Actions\Logout;
+use App\Services\NavigationService;
 use Livewire\Volt\Component;
 
 new class extends Component
 {
+    public $navigationRoutes = [];
+
+    public function mount()
+    {
+        $this->navigationRoutes = NavigationService::getNavigationRoutes();
+    }
+
     /**
      * Log the current user out of the application.
      */
@@ -30,9 +38,15 @@ new class extends Component
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Главная') }}
-                    </x-nav-link>
+                    @foreach($navigationRoutes as $navRoute)
+                        <x-nav-link
+                                :href="$navRoute['url']"
+                                :active="App\Services\NavigationService::isActiveRoute($navRoute['name'])"
+                                wire:navigate
+                        >
+                            {{ $navRoute['title'] }}
+                        </x-nav-link>
+                    @endforeach
                 </div>
             </div>
 
@@ -81,9 +95,15 @@ new class extends Component
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
-                {{ __('Главная') }}
-            </x-responsive-nav-link>
+            @foreach($navigationRoutes as $navRoute)
+                <x-responsive-nav-link
+                        :href="$navRoute['url']"
+                        :active="App\Services\NavigationService::isActiveRoute($navRoute['name'])"
+                        wire:navigate
+                >
+                    {{ $navRoute['title'] }}
+                </x-responsive-nav-link>
+            @endforeach
         </div>
 
         <!-- Responsive Settings Options -->
