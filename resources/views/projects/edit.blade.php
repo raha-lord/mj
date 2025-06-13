@@ -13,11 +13,11 @@
                     <section>
                         <header>
                             <h2 class="text-lg font-medium text-gray-900">
-                                Create StatusCode
+                                Edit Project #{{ $project->id }}
                             </h2>
                             <div class="flex justify-end mt-5">
                                 <a class="px-2 py-1 rounded-md bg-sky-500 text-sky-100 hover:bg-sky-600"
-                                   href="{{ route('status.index') }}" title="Back">< Back</a>
+                                   href="{{ route('projects.index') }}" title="Back">< Back</a>
                             </div>
                         </header>
 
@@ -29,10 +29,12 @@
                             </ul>
                         @endif
 
-                        <form method="POST" action="{{ route('status.store') }}" class="mt-6 space-y-6"
+                        <form method="POST" action="{{ route('projects.update', $project->id) }}" class="mt-6 space-y-6"
                               accept-charset="UTF-8" enctype="multipart/form-data">
+                            {{ method_field('PATCH') }}
                             @csrf()
-                            @include ('status.status.form', ['formMode' => 'create'])
+
+                            @include ('projects.project.form', ['formMode' => 'edit'])
                         </form>
                     </section>
 

@@ -13,10 +13,11 @@
                     <section>
                         <header>
                             <h2 class="text-lg font-medium text-gray-900">
-                                Edit Task #{{ $task->id }}
+                                Edit StatusCode #{{ $statuscode->id }}
                             </h2>
                             <div class="flex justify-end mt-5">
-                                <a class="px-2 py-1 rounded-md bg-sky-500 text-sky-100 hover:bg-sky-600" href="{{ route('task.index') }}" title="Back">< Back</a>
+                                <a class="px-2 py-1 rounded-md bg-sky-500 text-sky-100 hover:bg-sky-600"
+                                   href="{{ route('statuses.index') }}" title="Back">< Back</a>
                             </div>
                         </header>
 
@@ -28,11 +29,12 @@
                             </ul>
                         @endif
 
-                        <form method="POST" action="{{ route('task.update', $task->id) }}" class="mt-6 space-y-6" accept-charset="UTF-8" enctype="multipart/form-data">
+                        <form method="POST" action="{{ route('statuses.update', $statuscode->id) }}"
+                              class="mt-6 space-y-6" accept-charset="UTF-8" enctype="multipart/form-data">
                             {{ method_field('PATCH') }}
                             @csrf()
 
-                            @include ('task.task.form', ['formMode' => 'edit'])
+                            @include ('statuses.statuses.form', ['formMode' => 'edit'])
                         </form>
                     </section>
 

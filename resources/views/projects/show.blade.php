@@ -16,7 +16,7 @@
                                 Show Project
                             </h2>
                             <div class="flex justify-end mt-5">
-                                <a class="px-2 py-1 rounded-md bg-sky-500 text-sky-100 hover:bg-sky-600" href="{{ route('project.index') }}" title="Back">< Back</a>
+                                <a class="px-2 py-1 rounded-md bg-sky-500 text-sky-100 hover:bg-sky-600" href="{{ route('projects.index') }}" title="Back">< Back</a>
                             </div>
                         </header>
                         </br>

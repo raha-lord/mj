@@ -15,7 +15,7 @@
                                 Statuscode
                             </h2>
                             <div class="flex justify-end mt-5">
-                                <a href="{{ route('status.create') }}" class="px-2 py-1 rounded-md bg-sky-500 text-white hover:bg-sky-600" title="Add New StatusCode">Add New</a>
+                                <a href="{{ route('statuses.create') }}" class="px-2 py-1 rounded-md bg-sky-500 text-white hover:bg-sky-600" title="Add New StatusCode">Add New</a>
                             </div>
                         </header>
                         </br>
@@ -45,10 +45,10 @@
                                     <td class="px-6 py-4">{{ $loop->iteration }}</td>
                                     <td class="px-6 py-4">{{ $item->slug }}</td><td class="px-6 py-4">{{ $item->name }}</td><td class="px-6 py-4">{{ $item->description }}</td>
                                     <td class="px-6 py-4">
-                                        <a href="{{ route('status.show', $item->id) }}" title="View StatusCode"><button type="button" class="bg-indigo-600 hover:bg-indigo-800 text-white font-bold py-1 px-2 rounded">View</button></a>
-                                        <a href="{{ route('status.edit', $item->id) }}" title="Edit StatusCode"><button type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">Edit</button></a>
+                                        <a href="{{ route('statuses.show', $item->id) }}" title="View StatusCode"><button type="button" class="bg-indigo-600 hover:bg-indigo-800 text-white font-bold py-1 px-2 rounded">View</button></a>
+                                        <a href="{{ route('statuses.edit', $item->id) }}" title="Edit StatusCode"><button type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">Edit</button></a>
 
-                                        <form method="POST" action="{{ route('status.destroy', $item->id) }}" accept-charset="UTF-8" style="display:inline">
+                                        <form method="POST" action="{{ route('statuses.destroy', $item->id) }}" accept-charset="UTF-8" style="display:inline">
                                             {{ method_field('DELETE') }}
                                             @csrf()
                                             <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded" title="Delete StatusCode" onclick="return confirm(&quot;Confirm delete?&quot;)">Delete</button>

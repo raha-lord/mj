@@ -13,10 +13,11 @@
                     <section>
                         <header>
                             <h2 class="text-lg font-medium text-gray-900">
-                                Create Task
+                                Create StatusCode
                             </h2>
                             <div class="flex justify-end mt-5">
-                                <a class="px-2 py-1 rounded-md bg-sky-500 text-sky-100 hover:bg-sky-600" href="{{ route('task.index') }}" title="Back">< Back</a>
+                                <a class="px-2 py-1 rounded-md bg-sky-500 text-sky-100 hover:bg-sky-600"
+                                   href="{{ route('statuses.index') }}" title="Back">< Back</a>
                             </div>
                         </header>
 
@@ -28,9 +29,10 @@
                             </ul>
                         @endif
 
-                        <form method="POST" action="{{ route('task.store') }}" class="mt-6 space-y-6" accept-charset="UTF-8" enctype="multipart/form-data">
+                        <form method="POST" action="{{ route('statuses.store') }}" class="mt-6 space-y-6"
+                              accept-charset="UTF-8" enctype="multipart/form-data">
                             @csrf()
-                            @include ('task.task.form', ['formMode' => 'create'])
+                            @include ('statuses.statuses.form', ['formMode' => 'create'])
                         </form>
                     </section>
 

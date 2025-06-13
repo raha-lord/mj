@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 
 use App\Models\Status;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
+use Illuminate\View\View;
 
 class StatusController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function index(Request $request)
     {
@@ -28,25 +31,25 @@ class StatusController extends Controller
             $status = Status::latest()->paginate($perPage);
         }
 
-        return view('status.status.index', compact('status'));
+        return view('statuses.index', compact('status'));
     }
 
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function create()
     {
-        return view('status.status.create');
+        return view('statuses.create');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @return RedirectResponse|Redirector
      */
     public function store(Request $request)
     {
@@ -55,7 +58,7 @@ class StatusController extends Controller
 
         Status::create($requestData);
 
-        return redirect('status')->with('flash_message', 'Status added!');
+        return redirect('statuses')->with('flash_message', 'Status added!');
     }
 
     /**
@@ -63,13 +66,13 @@ class StatusController extends Controller
      *
      * @param int $id
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function show($id)
     {
         $statuscode = Status::findOrFail($id);
 
-        return view('status.status.show', compact('statuscode'));
+        return view('statuses.show', compact('statuscode'));
     }
 
     /**
@@ -77,22 +80,22 @@ class StatusController extends Controller
      *
      * @param int $id
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function edit($id)
     {
         $statuscode = Status::findOrFail($id);
 
-        return view('status.status.edit', compact('statuscode'));
+        return view('statuses.edit', compact('statuscode'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param int $id
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @return RedirectResponse|Redirector
      */
     public function update(Request $request, $id)
     {
@@ -102,7 +105,7 @@ class StatusController extends Controller
         $statuscode = Status::findOrFail($id);
         $statuscode->update($requestData);
 
-        return redirect('status')->with('flash_message', 'Status updated!');
+        return redirect('statuses')->with('flash_message', 'Status updated!');
     }
 
     /**
@@ -110,12 +113,12 @@ class StatusController extends Controller
      *
      * @param int $id
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @return RedirectResponse|Redirector
      */
     public function destroy($id)
     {
         Status::destroy($id);
 
-        return redirect('status')->with('flash_message', 'Status deleted!');
+        return redirect('statuses')->with('flash_message', 'Status deleted!');
     }
 }

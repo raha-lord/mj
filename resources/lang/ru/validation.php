@@ -91,7 +91,7 @@ return [
         'url' => 'URL',
         'category' => 'категория',
         'tag' => 'тег',
-        'status' => 'статус',
+        'statuses' => 'статус',
         'type' => 'тип',
         'role' => 'роль',
         'permissions' => 'права доступа',

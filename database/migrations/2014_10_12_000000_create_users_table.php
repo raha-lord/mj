@@ -19,6 +19,18 @@ return new class extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+
+            // Soft deletes
+            $table->softDeletes();
+
+            // Аудит поля (без foreign keys так как могут быть циклические ссылки)
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unsignedBigInteger('deleted_by')->nullable();
+
+            // Индексы
+            $table->index('email');
+            $table->index('deleted_at');
         });
     }
 

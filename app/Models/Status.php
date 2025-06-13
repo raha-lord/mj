@@ -3,29 +3,41 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Status extends Model
 {
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
-    protected $table = 'task.statuses';
+    use SoftDeletes;
 
-    /**
-    * The database primary key value.
-    *
-    * @var string
-    */
-    protected $primaryKey = 'id';
+    protected $table = 'tasks_management.statuses';
 
-    /**
-     * Attributes that should be mass-assignable.
-     *
-     * @var array
-     */
-    protected $fillable = ['slug', 'name', 'description'];
+    protected $fillable = [
+        'slug',
+        'name',
+        'description',
+        'color',
+        'sort_order',
+        'is_final'
+    ];
 
+    protected $casts = [
+        'is_final' => 'boolean',
+        'sort_order' => 'integer',
+    ];
 
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    public function scopeBySlug($query, $slug)
+    {
+        return $query->where('slug', $slug);
+    }
+
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('sort_order')->orderBy('name');
+    }
 }

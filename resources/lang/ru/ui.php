@@ -271,4 +271,168 @@ return [
     'optional' => 'Необязательно',
     'example' => 'Пример',
     'preview' => 'Предварительный просмотр',
+
+    // Задачи
+    'edit_task' => 'Редактировать задачу',
+    'task_information' => 'Информация о задаче',
+    'task_name' => 'Название задачи',
+    'select_project' => 'Выберите проект',
+    'statuses' => 'Статус',
+    'start_date' => 'Дата начала',
+    'end_date' => 'Дата окончания',
+    'assignees' => 'Исполнители',
+    'current_assignees' => 'Текущие исполнители',
+    'no_assignees' => 'Исполнители не назначены',
+    'add_assignee' => 'Добавить исполнителя',
+    'select_user' => 'Выберите пользователя',
+    'assignee' => 'Исполнитель',
+    'observer' => 'Наблюдатель',
+    'reviewer' => 'Рецензент',
+    'manager' => 'Менеджер',
+    'save_changes' => 'Сохранить изменения',
+    'please_select_user' => 'Пожалуйста, выберите пользователя',
+    'error_adding_assignee' => 'Ошибка при добавлении исполнителя',
+    'error_removing_assignee' => 'Ошибка при удалении исполнителя',
+    'error_occurred' => 'Произошла ошибка',
+    'confirm_remove_assignee' => 'Вы уверены, что хотите удалить этого исполнителя?',
+
+    // Dashboard простой
+    'dashboard_subtitle' => 'Добро пожаловать в систему управления задачами',
+    'dashboard_welcome_text' => 'Здесь вы можете управлять своими задачами и проектами.',
+
+
+    // Размеры задач
+    'task_size' => 'Размер задачи',
+    'size' => 'Размер',
+    'estimated_hours' => 'Оценка времени (ч)',
+    'actual_hours' => 'Фактическое время (ч)',
+    'time_tracking' => 'Учет времени',
+    'log_time' => 'Записать время',
+    'hours_spent' => 'Потрачено часов',
+    'time_description' => 'Описание работы',
+    'time_logged_successfully' => 'Время (:hours ч) успешно записано',
+    'select_size' => 'Выберите размер',
+    'recommended_size' => 'Рекомендуемый размер',
+    'time_estimation' => 'Оценка времени',
+    'story_points' => 'Story Points',
+    'time_range' => 'Временной диапазон',
+    'over_budget' => 'Превышен бюджет времени',
+    'on_budget' => 'В рамках бюджета',
+    'estimation_accuracy' => 'Точность оценки',
+    'time_progress' => 'Прогресс по времени',
+    'no_time_estimate' => 'Нет оценки времени',
+    'auto_size_recommendation' => 'Автоматическая рекомендация размера',
+    'size_mismatch_warning' => 'Размер не соответствует оценке времени',
+    'should_split_task' => 'Рекомендуется разбить на подзадачи',
+
+    // Размеры (значения из сидера)
+    'very_small_task' => 'Очень маленькая',
+    'small_task' => 'Маленькая',
+    'medium_task' => 'Средняя',
+    'large_task' => 'Большая',
+    'very_large_task' => 'Очень большая',
+    'epic_task' => 'Эпик',
+
+    // Фильтры времени
+    'time_filters' => 'Фильтры по времени',
+    'overdue_tasks' => 'Просроченные задачи',
+    'over_budget_tasks' => 'Превышающие бюджет',
+    'no_estimate_tasks' => 'Без оценки времени',
+
+    // Статистика
+    'size_statistics' => 'Статистика по размерам',
+    'total_tasks' => 'Всего задач',
+    'completed_tasks' => 'Завершенных задач',
+    'completion_rate' => 'Процент завершения',
+    'average_actual_hours' => 'Среднее фактическое время',
+    'task_size_distribution' => 'Распределение задач по размерам',
+    'estimation_vs_actual' => 'Оценка vs Факт',
+
+    // Сообщения и подсказки
+    'hours_format_hint' => 'Укажите время в часах (например: 2.5)',
+    'size_based_on_estimate' => 'Размер будет подобран автоматически на основе оценки',
+    'update_size_recommendation' => 'Обновить рекомендацию размера',
+    'time_tracking_description' => 'Ведите учет фактически потраченного времени для улучшения будущих оценок',
+
+    // Список задач
+    'search_tasks' => 'Поиск задач...',
+    'all_statuses' => 'Все статусы',
+    'all_priorities' => 'Все приоритеты',
+    'due_date' => 'Срок выполнения',
+    'unassigned' => 'Не назначено',
+    'no_tasks_found' => 'Задачи не найдены',
+    'create_first_task_hint' => 'Создайте первую задачу, чтобы начать работу',
+    'confirm_delete_task' => 'Вы уверены, что хотите удалить эту задачу?',
+    'actions' => 'Действия',
+    // Приоритеты
+    'low' => 'Низкий',
+    'normal' => 'Обычный',
+    'high' => 'Высокий',
+    'urgent' => 'Срочный',
+
+    'completed_date' => 'Дата завершения',
+    'created' => 'Создано',
+    'updated' => 'Обновлено',
+    'created_by' => 'Создал',
+    'updated_by' => 'Обновил',
+    'last_updated_by' => 'Последнее обновление',
+
+    // Время
+    'estimated' => 'Оценка',
+    'actual' => 'Фактически',
+    'accuracy' => 'Точность',
+    'progress' => 'Прогресс',
+    'log' => 'Записать',
+    'hours' => 'Часы',
+    'description_optional' => 'Описание (необязательно)',
+
+    // Размеры задач
+    'auto_detect' => 'Определить автоматически',
+    'no_size' => 'Без размера',
+    'size_auto_hint' => 'Размер будет выбран автоматически на основе оценки времени',
+    'size_recommendation' => 'Рекомендация по размеру',
+    'recommended_size_hint' => 'На основе оценки времени рекомендуется изменить размер с ":current" на ":recommended"',
+    'delete_task' => 'Удалить задачу',
+    'view_project' => 'Просмотреть проект',
+    'quick_actions' => 'Быстрые действия',
+
+    // Статусы задач
+    'mark_completed' => 'Отметить выполненной',
+    'reopen' => 'Переоткрыть',
+    'overdue' => 'Просрочено',
+
+
+    // Сообщения
+    'task_created_successfully' => 'Задача успешно создана',
+    'task_updated_successfully' => 'Задача успешно обновлена',
+    'task_deleted_successfully' => 'Задача успешно удалена',
+    'task_marked_completed' => 'Задача отмечена как выполненная',
+    'task_reopened' => 'Задача переоткрыта',
+
+    // Управление исполнителями
+    'user_already_assigned' => 'Пользователь уже назначен на эту роль',
+    'assignee_added_successfully' => 'Исполнитель успешно добавлен',
+    'assignee_removed_successfully' => 'Исполнитель успешно удален',
+    'hold_ctrl_multiple' => 'Удерживайте Ctrl для множественного выбора',
+
+    // Подтверждения
+    'confirm_mark_completed' => 'Отметить задачу как выполненную?',
+    'confirm_reopen' => 'Переоткрыть задачу?',
+
+    // Ошибки
+    'due_date_after_start' => 'Срок выполнения должен быть после даты начала',
+    'start_date_before_due' => 'Дата начала должна быть до срока выполнения',
+
+    // Выборы
+    'no_project' => 'Без проекта',
+    'system' => 'Система',
+
+    // Метаданные
+    'metadata' => 'Метаданные',
+    'change_history' => 'История изменений',
+    'changed_field' => 'изменил поле ":field"',
+    'from' => 'с',
+    'show_all_changes' => 'Показать все изменения (:count)',
+
+
 ];

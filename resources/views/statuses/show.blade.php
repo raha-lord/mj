@@ -13,10 +13,10 @@
                     <section>
                         <header>
                             <h2 class="text-lg font-medium text-gray-900">
-                                Show Task
+                                Show StatusCode
                             </h2>
                             <div class="flex justify-end mt-5">
-                                <a class="px-2 py-1 rounded-md bg-sky-500 text-sky-100 hover:bg-sky-600" href="{{ route('task.index') }}" title="Back">< Back</a>
+                                <a class="px-2 py-1 rounded-md bg-sky-500 text-sky-100 hover:bg-sky-600" href="{{ route('statuses.index') }}" title="Back">< Back</a>
                             </div>
                         </header>
                         </br>
@@ -24,9 +24,9 @@
                         <table class="shadow-lg bg-white">
                             <tr>
                                 <td class="border px-8 py-4 font-bold">ID</td>
-                                <td class="border px-8 py-4">{{ $task->id }}</td>
+                                <td class="border px-8 py-4">{{ $statuscode->id }}</td>
                             </tr>
-                            <tr><td class="border px-8 py-4 font-bold"> Name </td><td class="border px-8 py-4"> {{ $task->name }} </td></tr><tr><td class="border px-8 py-4 font-bold"> Description </td><td class="border px-8 py-4"> {{ $task->description }} </td></tr><tr><td class="border px-8 py-4 font-bold"> D Start </td><td class="border px-8 py-4"> {{ $task->d_start }} </td></tr>
+                            <tr><td class="border px-8 py-4 font-bold"> Slug </td><td class="border px-8 py-4"> {{ $statuscode->slug }} </td></tr><tr><td class="border px-8 py-4 font-bold"> Name </td><td class="border px-8 py-4"> {{ $statuscode->name }} </td></tr><tr><td class="border px-8 py-4 font-bold"> Description </td><td class="border px-8 py-4"> {{ $statuscode->description }} </td></tr>
                         </table>
 
                     </section>

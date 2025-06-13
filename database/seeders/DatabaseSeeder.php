@@ -12,11 +12,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
+        $this->command->info('🌱 Начинаю выполнение сидов...');
 
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        // Порядок важен из-за внешних ключей
+        $this->call([
+            TaskSizesSeeder::class,      // Сначала размеры (независимые)
+            StatusesSeeder::class,       // Затем статусы (независимые)
+            ProjectsSeeder::class,       // Затем проекты (независимые)
+            TasksSeeder::class,          // Задачи (зависят от всех предыдущих)
+        ]);
+
+        $this->command->info('✅ Все сиды выполнены успешно!');
     }
 }

@@ -12,10 +12,10 @@
                     <section>
                         <header>
                             <h2 class="text-lg font-medium text-gray-900">
-                                Task
+                                Project
                             </h2>
                             <div class="flex justify-end mt-5">
-                                <a href="{{ route('task.create') }}" class="px-2 py-1 rounded-md bg-sky-500 text-white hover:bg-sky-600" title="Add New Task">Add New</a>
+                                <a href="{{ route('projects.create') }}" class="px-2 py-1 rounded-md bg-sky-500 text-white hover:bg-sky-600" title="Add New Project">Add New</a>
                             </div>
                         </header>
                         </br>
@@ -35,23 +35,23 @@
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                                 <tr>
                                     <th scope="col" class="px-6 py-3">#</th>
-                                    <th scope="col" class="px-6 py-3">Name</th><th scope="col" class="px-6 py-3">Description</th><th scope="col" class="px-6 py-3">D Start</th>
+                                    <th scope="col" class="px-6 py-3">Slug</th><th scope="col" class="px-6 py-3">Name</th><th scope="col" class="px-6 py-3">Description</th>
                                     <th scope="col" class="px-6 py-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                            @foreach($task as $item)
+                            @foreach($project as $item)
                                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                                     <td class="px-6 py-4">{{ $loop->iteration }}</td>
-                                    <td class="px-6 py-4">{{ $item->name }}</td><td class="px-6 py-4">{{ $item->description }}</td><td class="px-6 py-4">{{ $item->d_start }}</td>
+                                    <td class="px-6 py-4">{{ $item->slug }}</td><td class="px-6 py-4">{{ $item->name }}</td><td class="px-6 py-4">{{ $item->description }}</td>
                                     <td class="px-6 py-4">
-                                        <a href="{{ route('task.show', $item->id) }}" title="View Task"><button type="button" class="bg-indigo-600 hover:bg-indigo-800 text-white font-bold py-1 px-2 rounded">View</button></a>
-                                        <a href="{{ route('task.edit', $item->id) }}" title="Edit Task"><button type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">Edit</button></a>
+                                        <a href="{{ route('projects.show', $item->id) }}" title="View Project"><button type="button" class="bg-indigo-600 hover:bg-indigo-800 text-white font-bold py-1 px-2 rounded">View</button></a>
+                                        <a href="{{ route('projects.edit', $item->id) }}" title="Edit Project"><button type="button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">Edit</button></a>
 
-                                        <form method="POST" action="{{ route('task.destroy', $item->id) }}" accept-charset="UTF-8" style="display:inline">
+                                        <form method="POST" action="{{ route('projects.destroy', $item->id) }}" accept-charset="UTF-8" style="display:inline">
                                             {{ method_field('DELETE') }}
                                             @csrf()
-                                            <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded" title="Delete Task" onclick="return confirm(&quot;Confirm delete?&quot;)">Delete</button>
+                                            <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded" title="Delete Project" onclick="return confirm(&quot;Confirm delete?&quot;)">Delete</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -60,7 +60,7 @@
                         </table>
     
                         <div class="mt-6">
-                            {!! $task->appends(['search' => Request::get('search')])->render() !!}
+                            {!! $project->appends(['search' => Request::get('search')])->render() !!}
                         </div>
                     </section>
                 </div>
