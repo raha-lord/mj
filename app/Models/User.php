@@ -36,6 +36,10 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function timeLogs(): HasMany
+    {
+        return $this->hasMany(TaskTimeLog::class);
+    }
     /**
      * Get the attributes that should be cast.
      *

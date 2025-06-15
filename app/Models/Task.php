@@ -3,13 +3,15 @@
 
 namespace App\Models;
 
+use App\Services\TimeLogService;
 use App\Traits\HasAuditFields;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use Illuminate\Database\Eloquent\Casts\Attribute;
 class Task extends Model
 {
     use SoftDeletes, HasAuditFields;
@@ -36,12 +38,23 @@ class Task extends Model
         'completed_date' => 'datetime',
         'actual_hours' => 'decimal:2',
         'estimated_hours' => 'decimal:2',
+        'deleted_at' => 'datetime',
     ];
 
-    // ==========================================
-    // ОТНОШЕНИЯ (BelongsTo - единственное число)
-    // ==========================================
+    public function getStartDateAttribute($value)
+    {
+        return $value ? Carbon::parse($value) : null;
+    }
 
+    public function getDueDateAttribute($value)
+    {
+        return $value ? Carbon::parse($value) : null;
+    }
+
+    public function getCompletedDateAttribute($value)
+    {
+        return $value ? Carbon::parse($value) : null;
+    }
     /**
      * Статус задачи (одна задача -> один статус)
      */
@@ -314,6 +327,12 @@ class Task extends Model
         ]);
     }
 
+
+    public function timeLogs(): HasMany
+    {
+        return $this->hasMany(TaskTimeLog::class);
+    }
+
     /**
      * Отстранить пользователя от задачи
      */
@@ -347,20 +366,9 @@ class Task extends Model
     /**
      * Обновить фактическое время
      */
-    public function logTimeSpent(float $hours, string $description = null): void
+    public function logTimeSpent(float $hours, ?string $description = null, ?User $user = null): TaskTimeLog
     {
-        $this->increment('actual_hours', $hours);
-
-        // Опционально: логируем в историю
-        if (auth()->check()) {
-            TaskHistory::logChange(
-                $this,
-                auth()->user(),
-                'time_logged',
-                null,
-                "+{$hours}ч" . ($description ? " ({$description})" : ''),
-                ['hours_added' => $hours, 'description' => $description]
-            );
-        }
+        $timeLogService = app(TimeLogService::class);
+        return $timeLogService->logTime($this, $hours, $description, $user);
     }
 }

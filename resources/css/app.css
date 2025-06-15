@@ -1,3 +1,29 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .task-card {
+        @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4;
+    }
+
+    .priority-badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+
+    .priority-low {
+        @apply bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300;
+    }
+
+    .priority-normal {
+        @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300;
+    }
+
+    .priority-high {
+        @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300;
+    }
+
+    .priority-urgent {
+        @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300;
+    }
+}

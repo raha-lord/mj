@@ -2,11 +2,11 @@
     <x-slot name="header">
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('ui.create_task') }}
+                Создать задачу
             </h2>
             <a href="{{ route('tasks.index') }}"
                class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
-                {{ __('ui.back') }}
+                Назад
             </a>
         </div>
     </x-slot>
@@ -30,14 +30,14 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                            {{ __('ui.task_information') }}
+                            Информация о задаче
                         </h3>
                     </div>
                     <div class="p-6 space-y-4">
                         <!-- Название -->
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {{ __('ui.task_name') }} <span class="text-red-500">*</span>
+                                Название задачи <span class="text-red-500">*</span>
                             </label>
                             <input type="text" name="name" id="name"
                                    value="{{ old('name') }}"
@@ -48,7 +48,7 @@
                         <!-- Описание -->
                         <div>
                             <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                {{ __('ui.description') }}
+                                Описание
                             </label>
                             <textarea name="description" id="description" rows="4"
                                       class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ old('description') }}</textarea>
@@ -58,33 +58,37 @@
                             <!-- Проект -->
                             <div>
                                 <label for="project_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {{ __('ui.project') }}
+                                    Проект
                                 </label>
                                 <select name="project_id" id="project_id"
                                         class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">{{ __('ui.select_project') }}</option>
-                                    @foreach($projects as $project)
-                                        <option value="{{ $project->id }}"
-                                                {{ old('project_id') == $project->id ? 'selected' : '' }}>
-                                            {{ $project->name }}
-                                        </option>
-                                    @endforeach
+                                    <option value="">Выберите проект</option>
+                                    @if(isset($projects))
+                                        @foreach($projects as $project)
+                                            <option value="{{ $project->id }}"
+                                                    {{ old('project_id') == $project->id ? 'selected' : '' }}>
+                                                {{ $project->name }}
+                                            </option>
+                                        @endforeach
+                                    @endif
                                 </select>
                             </div>
 
                             <!-- Статус -->
                             <div>
                                 <label for="status_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {{ __('ui.status') }} <span class="text-red-500">*</span>
+                                    Статус <span class="text-red-500">*</span>
                                 </label>
                                 <select name="status_id" id="status_id" required
                                         class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                    @foreach($statuses as $status)
-                                        <option value="{{ $status->id }}"
-                                                {{ old('status_id') == $status->id ? 'selected' : '' }}>
-                                            {{ $status->name }}
-                                        </option>
-                                    @endforeach
+                                    @if(isset($statuses))
+                                        @foreach($statuses as $status)
+                                            <option value="{{ $status->id }}"
+                                                    {{ old('status_id') == $status->id ? 'selected' : '' }}>
+                                                {{ $status->name }}
+                                            </option>
+                                        @endforeach
+                                    @endif
                                 </select>
                             </div>
                         </div>
@@ -93,34 +97,36 @@
                             <!-- Приоритет -->
                             <div>
                                 <label for="priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {{ __('ui.priority') }} <span class="text-red-500">*</span>
+                                    Приоритет <span class="text-red-500">*</span>
                                 </label>
                                 <select name="priority" id="priority" required
                                         class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>{{ __('ui.low') }}</option>
-                                    <option value="normal" {{ old('priority', 'normal') == 'normal' ? 'selected' : '' }}>{{ __('ui.normal') }}</option>
-                                    <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>{{ __('ui.high') }}</option>
-                                    <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>{{ __('ui.urgent') }}</option>
+                                    <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Низкий</option>
+                                    <option value="normal" {{ old('priority', 'normal') == 'normal' ? 'selected' : '' }}>Обычный</option>
+                                    <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>Высокий</option>
+                                    <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>Срочный</option>
                                 </select>
                             </div>
 
                             <!-- Размер -->
                             <div>
                                 <label for="size_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {{ __('ui.size') }}
+                                    Размер
                                 </label>
                                 <select name="size_id" id="size_id"
                                         class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">{{ __('ui.auto_detect') }}</option>
-                                    @foreach($sizes as $size)
-                                        <option value="{{ $size->id }}"
-                                                {{ old('size_id') == $size->id ? 'selected' : '' }}>
-                                            {{ $size->code }} - {{ $size->name }} ({{ $size->time_range }})
-                                        </option>
-                                    @endforeach
+                                    <option value="">Автоопределение</option>
+                                    @if(isset($sizes))
+                                        @foreach($sizes as $size)
+                                            <option value="{{ $size->id }}"
+                                                    {{ old('size_id') == $size->id ? 'selected' : '' }}>
+                                                {{ $size->code }} - {{ $size->name }} ({{ $size->time_range ?? 'без ограничений' }})
+                                            </option>
+                                        @endforeach
+                                    @endif
                                 </select>
                                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ __('ui.size_auto_hint') }}
+                                    Размер будет определен автоматически на основе оценки времени
                                 </p>
                             </div>
                         </div>
@@ -129,31 +135,34 @@
                             <!-- Оценка времени -->
                             <div>
                                 <label for="estimated_hours" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {{ __('ui.estimated_hours') }}
+                                    Оценка времени (часы)
                                 </label>
                                 <input type="number" name="estimated_hours" id="estimated_hours"
                                        value="{{ old('estimated_hours') }}"
                                        step="0.25" min="0.25" max="1000"
-                                       class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                       class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="0.25">
                                 <div id="size_recommendation" class="mt-1 text-sm text-blue-600 dark:text-blue-400" style="display: none;"></div>
                             </div>
 
                             <!-- Исполнители -->
                             <div>
                                 <label for="assignees" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {{ __('ui.assignees') }}
+                                    Исполнители
                                 </label>
                                 <select name="assignees[]" id="assignees" multiple
                                         class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                    @foreach($users as $user)
-                                        <option value="{{ $user->id }}"
-                                                {{ in_array($user->id, old('assignees', [])) ? 'selected' : '' }}>
-                                            {{ $user->name }}
-                                        </option>
-                                    @endforeach
+                                    @if(isset($users))
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->id }}"
+                                                    {{ in_array($user->id, old('assignees', [])) ? 'selected' : '' }}>
+                                                {{ $user->name }}
+                                            </option>
+                                        @endforeach
+                                    @endif
                                 </select>
                                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    {{ __('ui.hold_ctrl_multiple') }}
+                                    Удерживайте Ctrl для выбора нескольких исполнителей
                                 </p>
                             </div>
                         </div>
@@ -161,21 +170,21 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <!-- Дата начала -->
                             <div>
-                                <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {{ __('ui.start_date') }}
+                                <label for="d_start" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Дата начала
                                 </label>
-                                <input type="datetime-local" name="start_date" id="start_date"
-                                       value="{{ old('start_date') }}"
+                                <input type="datetime-local" name="d_start" id="d_start"
+                                       value="{{ old('d_start') }}"
                                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             </div>
 
                             <!-- Дата завершения -->
                             <div>
-                                <label for="due_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    {{ __('ui.due_date') }}
+                                <label for="d_end" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Дата завершения
                                 </label>
-                                <input type="datetime-local" name="due_date" id="due_date"
-                                       value="{{ old('due_date') }}"
+                                <input type="datetime-local" name="d_end" id="d_end"
+                                       value="{{ old('d_end') }}"
                                        class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             </div>
                         </div>
@@ -186,11 +195,11 @@
                 <div class="flex justify-end space-x-3">
                     <a href="{{ route('tasks.index') }}"
                        class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors duration-200">
-                        {{ __('ui.cancel') }}
+                        Отмена
                     </a>
                     <button type="submit"
                             class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors duration-200">
-                        {{ __('ui.create_task') }}
+                        Создать задачу
                     </button>
                 </div>
             </form>
@@ -217,7 +226,7 @@
                     const data = await response.json();
 
                     if (data.size) {
-                        recommendationDiv.innerHTML = `{{ __('ui.recommended_size') }}: ${data.size.code} - ${data.size.name} (${data.size.time_range})`;
+                        recommendationDiv.innerHTML = `Рекомендуемый размер: ${data.size.code} - ${data.size.name} (${data.size.time_range})`;
                         recommendationDiv.style.display = 'block';
 
                         // Автоматически выбираем рекомендованный размер
@@ -232,12 +241,12 @@
             });
 
             // Валидация дат
-            document.getElementById('due_date').addEventListener('change', function() {
-                const startDate = document.getElementById('start_date').value;
+            document.getElementById('d_end').addEventListener('change', function() {
+                const startDate = document.getElementById('d_start').value;
                 const dueDate = this.value;
 
                 if (startDate && dueDate && new Date(dueDate) < new Date(startDate)) {
-                    alert('{{ __("ui.due_date_after_start") }}');
+                    alert('Дата завершения должна быть позже даты начала');
                     this.value = '';
                 }
             });
