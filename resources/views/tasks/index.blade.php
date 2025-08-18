@@ -4,7 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 {{ __('ui.tasks') }}
             </h2>
-            <button @click="$refs.createModal.open = true"
+            <button onclick="openCreateModal()"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -258,10 +258,10 @@
                                         </svg>
                                         <h3 class="text-sm font-medium mb-2">{{ __('ui.no_tasks_found') }}</h3>
                                         <p class="text-sm">{{ __('ui.create_first_task_hint') }}</p>
-                                        <a href="{{ route('tasks.create') }}"
-                                           class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">
+                                        <button onclick="openCreateModal()"
+                                                class="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">
                                             {{ __('ui.create_task') }}
-                                        </a>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -281,38 +281,14 @@
     </div>
 
     <!-- Модальное окно создания задачи -->
-    <div x-data="{ open: false }" x-ref="createModal" x-show="open" x-cloak 
-         @keydown.escape.window="open = false"
-         class="fixed inset-0 z-50 overflow-y-auto" 
-         aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
-             @click="open = false"
-             x-show="open"
-             x-transition:enter="ease-out duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             x-transition:leave="ease-in duration-200"
-             x-transition:leave-start="opacity-100"
-             x-transition:leave-end="opacity-0"></div>
-
-        <!-- Modal Content -->
-        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6"
-                 x-show="open"
-                 x-transition:enter="ease-out duration-300"
-                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                 x-transition:leave="ease-in duration-200"
-                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+    <div id="createTaskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800">
                 
                 <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="modal-title">
                         {{ __('ui.create_task') }}
                     </h3>
-                    <button @click="open = false" type="button" 
+                    <button onclick="closeCreateModal()" type="button" 
                             class="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         <span class="sr-only">Закрыть</span>
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -449,7 +425,7 @@
 
                 <!-- Кнопки -->
                 <div class="flex justify-end space-x-3 pt-4">
-                    <button type="button" @click="open = false"
+                    <button type="button" onclick="closeCreateModal()"
                             class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         {{ __('ui.cancel') }}
                     </button>
@@ -459,11 +435,34 @@
                     </button>
                 </div>
             </form>
-            </div>
         </div>
     </div>
 
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
+    <script>
+        function openCreateModal() {
+            document.getElementById('createTaskModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createTaskModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            // Очистить форму
+            document.getElementById('createTaskModal').querySelector('form').reset();
+        }
+
+        // Закрытие модального окна по клику на фон
+        document.getElementById('createTaskModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCreateModal();
+            }
+        });
+
+        // Закрытие по Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('createTaskModal').style.display === 'block') {
+                closeCreateModal();
+            }
+        });
+    </script>
 </x-app-layout>
