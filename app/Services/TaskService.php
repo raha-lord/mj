@@ -40,7 +40,29 @@ class TaskService
 
     public function updateTask(Task $task, array $data): bool
     {
-        return $task->update($data);
+        // Автоматический подбор размера если не указан
+        if (!isset($data['size_id']) && isset($data['estimated_hours'])) {
+            $data['size_id'] = $this->findRecommendedSize($data['estimated_hours'])?->id;
+        }
+
+        // Сохраняем исполнителей отдельно
+        $assignees = $data['assignees'] ?? null;
+        unset($data['assignees']);
+
+        $updated = $task->update($data);
+
+        // Обновляем исполнителей
+        if ($assignees !== null) {
+            if (empty($assignees)) {
+                // Убираем всех исполнителей
+                $task->assignees()->detach();
+            } else {
+                // Синхронизируем исполнителей
+                $task->assignees()->sync($assignees);
+            }
+        }
+
+        return $updated;
     }
 
     protected function findRecommendedSize(float $estimatedHours): ?TaskSize

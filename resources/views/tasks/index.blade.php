@@ -115,9 +115,28 @@
         </div>
     </div>
 
+    <style>
+        .priority-urgent {
+            background-color: rgb(254, 226, 226);
+            color: rgb(153, 27, 27);
+        }
+        .priority-high {
+            background-color: rgb(255, 237, 213);
+            color: rgb(154, 52, 18);
+        }
+        .priority-normal {
+            background-color: rgb(219, 234, 254);
+            color: rgb(30, 64, 175);
+        }
+        .priority-low {
+            background-color: rgb(220, 252, 231);
+            color: rgb(22, 101, 52);
+        }
+    </style>
+
     <!-- Модальное окно создания задачи -->
-    <div id="createTaskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
-        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800">
+    <div id="createTaskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="relative mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
                 
                 <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="modal-title">
@@ -273,6 +292,177 @@
         </div>
     </div>
 
+    <!-- Модальное окно просмотра/редактирования задачи -->
+    <div id="viewTaskModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4" style="display: none;">
+        <div class="relative mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
+                
+            <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="view-modal-title">
+                    Просмотр задачи
+                </h3>
+                <button onclick="closeViewModal()" type="button" 
+                        class="rounded-md bg-white dark:bg-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <span class="sr-only">Закрыть</span>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Режимы: просмотр и редактирование -->
+            <div class="mb-4">
+                <div class="flex space-x-2">
+                    <button id="viewModeBtn" onclick="switchToViewMode()" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md">
+                        Просмотр
+                    </button>
+                    <button id="editModeBtn" onclick="switchToEditMode()" 
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md">
+                        Редактирование
+                    </button>
+                </div>
+            </div>
+
+            <!-- Индикатор загрузки -->
+            <div id="taskLoadingIndicator" class="hidden">
+                <div class="flex justify-center items-center py-12">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span class="ml-2 text-gray-600 dark:text-gray-300">Загрузка задачи...</span>
+                </div>
+            </div>
+
+            <!-- Режим просмотра -->
+            <div id="viewMode" class="space-y-6">
+                <div id="taskViewContent">
+                    <!-- Содержимое будет загружаться через API -->
+                </div>
+            </div>
+
+            <!-- Режим редактирования -->
+            <div id="editMode" class="space-y-4" style="display: none;">
+                <form id="editTaskForm" class="space-y-4">
+                    @csrf
+                    <input type="hidden" id="edit_task_id" name="task_id">
+                    
+                    <!-- Название -->
+                    <div>
+                        <label for="edit_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {{ __('ui.name') }} <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="name" id="edit_name" required
+                               class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <!-- Описание -->
+                    <div>
+                        <label for="edit_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {{ __('ui.description') }}
+                        </label>
+                        <textarea name="description" id="edit_description" rows="3"
+                                  class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Проект -->
+                        <div>
+                            <label for="edit_project_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {{ __('ui.project') }}
+                            </label>
+                            <select name="project_id" id="edit_project_id"
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">{{ __('ui.select_project') }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Статус -->
+                        <div>
+                            <label for="edit_status_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {{ __('ui.status') }} <span class="text-red-500">*</span>
+                            </label>
+                            <select name="status_id" id="edit_status_id" required
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Приоритет -->
+                        <div>
+                            <label for="edit_priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {{ __('ui.priority') }} <span class="text-red-500">*</span>
+                            </label>
+                            <select name="priority" id="edit_priority" required
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="low">{{ __('ui.low') }}</option>
+                                <option value="normal">{{ __('ui.normal') }}</option>
+                                <option value="high">{{ __('ui.high') }}</option>
+                                <option value="urgent">{{ __('ui.urgent') }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Размер -->
+                        <div>
+                            <label for="edit_size_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {{ __('ui.size') }}
+                            </label>
+                            <select name="size_id" id="edit_size_id"
+                                    class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">{{ __('ui.auto_detect') }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Оценка времени -->
+                        <div>
+                            <label for="edit_estimated_hours" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {{ __('ui.estimated_hours') }}
+                            </label>
+                            <input type="number" name="estimated_hours" id="edit_estimated_hours"
+                                   step="0.25" min="0.25" max="1000"
+                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                   placeholder="0.25">
+                        </div>
+
+                        <!-- Дата завершения -->
+                        <div>
+                            <label for="edit_d_end" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                {{ __('ui.due_date') }}
+                            </label>
+                            <input type="datetime-local" name="d_end" id="edit_d_end"
+                                   class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Исполнители -->
+                    <div>
+                        <label for="edit_assignees" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {{ __('ui.assignees') }}
+                        </label>
+                        <select name="assignees[]" id="edit_assignees" multiple
+                                class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        </select>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            {{ __('ui.multiple_select_hint') }}
+                        </p>
+                    </div>
+
+                    <!-- Кнопки редактирования -->
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="switchToViewMode()"
+                                class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            {{ __('ui.cancel') }}
+                        </button>
+                        <button type="submit"
+                                class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            {{ __('ui.save_changes') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         function openCreateModal() {
             document.getElementById('createTaskModal').style.display = 'block';
@@ -284,6 +474,306 @@
             document.body.style.overflow = 'auto';
             // Очистить форму
             document.getElementById('createTaskModal').querySelector('form').reset();
+        }
+
+        // Функции для модального окна просмотра задачи
+        function openViewModal(taskId, editMode = false) {
+            document.getElementById('viewTaskModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            // Показываем нужный режим
+            if (editMode) {
+                // Сначала загружаем данные, потом переключаемся в режим редактирования
+                loadTaskData(taskId, true);
+            } else {
+                switchToViewMode();
+                loadTaskData(taskId);
+            }
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewTaskModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            
+            // Очищаем содержимое
+            document.getElementById('taskViewContent').innerHTML = '';
+            document.getElementById('editTaskForm').reset();
+        }
+
+        function switchToViewMode() {
+            document.getElementById('viewMode').style.display = 'block';
+            document.getElementById('editMode').style.display = 'none';
+            
+            // Обновляем кнопки
+            document.getElementById('viewModeBtn').className = 'px-4 py-2 bg-blue-600 text-white rounded-md';
+            document.getElementById('editModeBtn').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-md';
+            
+            document.getElementById('view-modal-title').textContent = 'Просмотр задачи';
+        }
+
+        function switchToEditMode() {
+            document.getElementById('viewMode').style.display = 'none';
+            document.getElementById('editMode').style.display = 'block';
+            
+            // Обновляем кнопки
+            document.getElementById('viewModeBtn').className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-md';
+            document.getElementById('editModeBtn').className = 'px-4 py-2 bg-blue-600 text-white rounded-md';
+            
+            document.getElementById('view-modal-title').textContent = 'Редактирование задачи';
+        }
+
+        // Глобальная переменная для хранения данных задачи
+        let currentTaskData = null;
+
+        function loadTaskData(taskId, switchToEdit = false) {
+            // Показываем индикатор загрузки
+            document.getElementById('taskLoadingIndicator').classList.remove('hidden');
+            document.getElementById('taskViewContent').innerHTML = '';
+            
+            fetch(`/api/tasks/${taskId}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Скрываем индикатор загрузки
+                document.getElementById('taskLoadingIndicator').classList.add('hidden');
+                
+                if (data.success) {
+                    currentTaskData = data.data;
+                    renderTaskView(data.data);
+                    populateEditForm(data.data);
+                    
+                    // Переключаемся в режим редактирования если нужно
+                    if (switchToEdit) {
+                        switchToEditMode();
+                    }
+                } else {
+                    throw new Error(data.message || 'API Error');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки задачи:', error);
+                document.getElementById('taskLoadingIndicator').classList.add('hidden');
+                document.getElementById('taskViewContent').innerHTML = `
+                    <div class="text-center text-red-600">
+                        <p>Ошибка загрузки задачи. Попробуйте еще раз.</p>
+                    </div>
+                `;
+            });
+        }
+
+        function renderTaskView(task) {
+            const html = `
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg space-y-6">
+                    <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
+                        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">${task.name}</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">ID: #${task.id}</p>
+                    </div>
+                    
+                    ${task.description ? `
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Описание</h3>
+                            <p class="text-gray-700 dark:text-gray-300">${task.description}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Проект</span>
+                                <p class="text-gray-900 dark:text-white">${task.project ? task.project.name : '—'}</p>
+                            </div>
+                            
+                            <div>
+                                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Статус</span>
+                                <div class="mt-1">
+                                    ${task.status ? `
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
+                                              style="background-color: ${task.status.color}20; color: ${task.status.color};">
+                                            ${task.status.name}
+                                        </span>
+                                    ` : '—'}
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Приоритет</span>
+                                <div class="mt-1">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium priority-${task.priority}">
+                                        ${task.priority}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            ${task.size ? `
+                                <div>
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Размер</span>
+                                    <p class="text-gray-900 dark:text-white">${task.size.code} - ${task.size.name}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="space-y-4">
+                            ${task.estimated_hours ? `
+                                <div>
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Оценка времени</span>
+                                    <p class="text-gray-900 dark:text-white">${task.estimated_hours} часов</p>
+                                </div>
+                            ` : ''}
+                            
+                            ${task.due_date ? `
+                                <div>
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Срок выполнения</span>
+                                    <p class="text-gray-900 dark:text-white">${new Date(task.due_date).toLocaleDateString('ru-RU')}</p>
+                                </div>
+                            ` : ''}
+                            
+                            <div>
+                                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Создана</span>
+                                <p class="text-gray-900 dark:text-white">${new Date(task.created_at).toLocaleDateString('ru-RU')}</p>
+                            </div>
+                            
+                            <div>
+                                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Автор</span>
+                                <p class="text-gray-900 dark:text-white">${task.created_by ? task.created_by.name : '—'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${task.assignees && task.assignees.length > 0 ? `
+                        <div>
+                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Исполнители</span>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                ${task.assignees.map(assignee => `
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        ${assignee.name}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.getElementById('taskViewContent').innerHTML = html;
+        }
+
+        function populateEditForm(task) {
+            document.getElementById('edit_task_id').value = task.id;
+            document.getElementById('edit_name').value = task.name;
+            document.getElementById('edit_description').value = task.description || '';
+            document.getElementById('edit_priority').value = task.priority;
+            document.getElementById('edit_estimated_hours').value = task.estimated_hours || '';
+            
+            if (task.due_date) {
+                // Конвертируем дату в формат datetime-local
+                const date = new Date(task.due_date);
+                document.getElementById('edit_d_end').value = date.toISOString().slice(0, 16);
+            }
+            
+            // Загружаем данные для select полей
+            loadSelectOptions(task);
+            
+            // Устанавливаем текущих исполнителей
+            if (task.assignees && task.assignees.length > 0) {
+                const assigneeSelect = document.getElementById('edit_assignees');
+                task.assignees.forEach(assignee => {
+                    const option = assigneeSelect.querySelector(`option[value="${assignee.id}"]`);
+                    if (option) {
+                        option.selected = true;
+                    }
+                });
+            }
+        }
+        
+        function loadSelectOptions(task) {
+            // Загружаем проекты
+            @if(isset($projects))
+                const projectSelect = document.getElementById('edit_project_id');
+                projectSelect.innerHTML = '<option value="">{{ __("ui.select_project") }}</option>';
+                const projects = [
+                    @foreach($projects as $project)
+                        { id: {{ $project->id }}, name: '{{ $project->name }}' },
+                    @endforeach
+                ];
+                projects.forEach(project => {
+                    const option = document.createElement('option');
+                    option.value = project.id;
+                    option.textContent = project.name;
+                    if (project.id == task.project_id) {
+                        option.selected = true;
+                    }
+                    projectSelect.appendChild(option);
+                });
+            @endif
+            
+            // Загружаем статусы
+            @if(isset($statuses))
+                const statusSelect = document.getElementById('edit_status_id');
+                statusSelect.innerHTML = '';
+                const statuses = [
+                    @foreach($statuses as $status)
+                        { id: {{ $status->id }}, name: '{{ $status->name }}' },
+                    @endforeach
+                ];
+                statuses.forEach(status => {
+                    const option = document.createElement('option');
+                    option.value = status.id;
+                    option.textContent = status.name;
+                    if (status.id == task.status_id) {
+                        option.selected = true;
+                    }
+                    statusSelect.appendChild(option);
+                });
+            @endif
+            
+            // Загружаем размеры
+            @if(isset($sizes))
+                const sizeSelect = document.getElementById('edit_size_id');
+                sizeSelect.innerHTML = '<option value="">{{ __("ui.auto_detect") }}</option>';
+                const sizes = [
+                    @foreach($sizes as $size)
+                        { id: {{ $size->id }}, code: '{{ $size->code }}', name: '{{ $size->name }}' },
+                    @endforeach
+                ];
+                sizes.forEach(size => {
+                    const option = document.createElement('option');
+                    option.value = size.id;
+                    option.textContent = size.code + ' - ' + size.name;
+                    if (size.id == task.size_id) {
+                        option.selected = true;
+                    }
+                    sizeSelect.appendChild(option);
+                });
+            @endif
+            
+            // Загружаем пользователей
+            @if(isset($users))
+                const assigneeSelect = document.getElementById('edit_assignees');
+                assigneeSelect.innerHTML = '';
+                const users = [
+                    @foreach($users as $user)
+                        { id: {{ $user->id }}, name: '{{ $user->name }}' },
+                    @endforeach
+                ];
+                users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = user.name;
+                    assigneeSelect.appendChild(option);
+                });
+            @endif
         }
 
         // Закрытие модального окна по клику на фон
@@ -562,6 +1052,108 @@
                 }
             }, 5000);
         }
+
+        // API редактирование задачи
+        document.getElementById('editTaskForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            console.log('API редактирование задачи запущено'); // Отладка
+            
+            const form = this;
+            const formData = new FormData(form);
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            const taskId = document.getElementById('edit_task_id').value;
+            
+            // Блокируем кнопку и показываем загрузку
+            submitButton.disabled = true;
+            submitButton.textContent = 'Сохранение...';
+            
+            // Собираем данные для API
+            const assigneeSelect = document.getElementById('edit_assignees');
+            const selectedAssignees = Array.from(assigneeSelect.selectedOptions).map(option => option.value);
+            
+            const taskData = {
+                name: formData.get('name'),
+                description: formData.get('description'),
+                project_id: formData.get('project_id') || null,
+                status_id: formData.get('status_id'),
+                priority: formData.get('priority'),
+                size_id: formData.get('size_id') || null,
+                estimated_hours: formData.get('estimated_hours') || null,
+                d_end: formData.get('d_end') || null,
+                assignees: selectedAssignees
+            };
+            
+            fetch(`/api/tasks/${taskId}`, {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(taskData)
+            })
+            .then(response => {
+                console.log('API ответ редактирования задачи:', response.status); // Отладка
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Задача обновлена:', data); // Отладка
+                
+                if (data.success) {
+                    // Обновляем текущие данные задачи
+                    currentTaskData = data.data;
+                    
+                    // Обновляем отображение в режиме просмотра
+                    renderTaskView(data.data);
+                    
+                    // Переключаемся в режим просмотра
+                    switchToViewMode();
+                    
+                    // Обновляем таблицу задач
+                    refreshTaskTable();
+                    
+                    // Показываем сообщение об успехе
+                    showSuccessMessage(data.message || 'Задача успешно обновлена');
+                } else {
+                    throw new Error(data.message || 'Ошибка при обновлении задачи');
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка API редактирования задачи:', error);
+                
+                let errorMessage = 'Произошла ошибка при обновлении задачи.';
+                if (error.errors) {
+                    // Обработка ошибок валидации
+                    const firstError = Object.values(error.errors)[0];
+                    if (Array.isArray(firstError)) {
+                        errorMessage = firstError[0];
+                    }
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                alert(errorMessage);
+            })
+            .finally(() => {
+                // Восстанавливаем кнопку
+                submitButton.disabled = false;
+                submitButton.textContent = originalText;
+            });
+        });
+
+        // Закрытие модального окна просмотра по клику на фон
+        document.getElementById('viewTaskModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeViewModal();
+            }
+        });
 
         // Дополнительная проверка на загрузку страницы
         window.addEventListener('beforeunload', function(e) {

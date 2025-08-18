@@ -89,6 +89,71 @@ class TaskApiController extends Controller
     }
 
     /**
+     * Получить данные задачи
+     */
+    public function show(Task $task): JsonResponse
+    {
+        // Загружаем все необходимые связи
+        $task->load([
+            'status', 
+            'project', 
+            'size', 
+            'assignees', 
+            'createdBy', 
+            'updatedBy'
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'data' => $task
+        ]);
+    }
+
+    /**
+     * Обновить задачу
+     */
+    public function update(Request $request, Task $task): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'project_id' => 'nullable|exists:projects,id',
+            'status_id' => 'required|exists:statuses,id',
+            'priority' => 'required|in:low,normal,high,urgent',
+            'size_id' => 'nullable|exists:task_sizes,id',
+            'estimated_hours' => 'nullable|numeric|min:0.25|max:1000',
+            'd_end' => 'nullable|date',
+            'assignees' => 'nullable|array',
+            'assignees.*' => 'exists:users,id'
+        ]);
+
+        try {
+            $this->taskService->updateTask($task, $validated);
+            
+            // Перезагружаем задачу с связями
+            $task->load([
+                'status', 
+                'project', 
+                'size', 
+                'assignees', 
+                'createdBy', 
+                'updatedBy'
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => __('ui.task_updated_successfully'),
+                'data' => $task
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ошибка при обновлении задачи: ' . $e->getMessage()
+            ], 422);
+        }
+    }
+
+    /**
      * Логирование времени
      */
     public function logTime(LogTimeRequest $request, Task $task): JsonResponse

@@ -32,6 +32,12 @@ Route::middleware(['web', 'auth'])->prefix('tasks')->name('api.tasks.')->group(f
     
     Route::get('/table-html', [TaskApiController::class, 'tableHtml'])
         ->name('table-html');
+        
+    Route::get('/{task}', [TaskApiController::class, 'show'])
+        ->name('show');
+        
+    Route::put('/{task}', [TaskApiController::class, 'update'])
+        ->name('update');
 
     // Работа с временем
     Route::post('{task}/log-time', [TaskApiController::class, 'logTime'])
