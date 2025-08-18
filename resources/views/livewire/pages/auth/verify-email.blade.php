@@ -20,7 +20,7 @@ new #[Layout('layouts.guest')] class extends Component
         }
 
         Auth::user()->sendEmailVerificationNotification();
-        Session::flash('status', 'verification-link-sent');
+        Session::flash('statuses', 'verification-link-sent');
     }
 
     /**
@@ -38,7 +38,7 @@ new #[Layout('layouts.guest')] class extends Component
         {{ __('ui.verify_email_text') }}
     </div>
 
-    @if (session('status') == 'verification-link-sent')
+    @if (session('statuses') == 'verification-link-sent')
         <div class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
             {{ __('ui.verification_sent') }}
         </div>

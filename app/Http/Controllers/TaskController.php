@@ -3,130 +3,156 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\Project;
-use App\Models\Status;
+use App\Http\Requests\LogTimeRequest;
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
+use App\Models\User;
+use App\Services\TaskAssignmentService;
+use App\Services\TaskService;
+use App\Services\TimeLogService;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\View\View
-     */
+    protected TaskService $taskService;
+    protected TaskAssignmentService $assignmentService;
+
+    protected TimeLogService $timeLogService;
+    public function __construct(TaskService $taskService, TaskAssignmentService $assignmentService,     TimeLogService $timeLogService)
+    {
+        $this->taskService = $taskService;
+        $this->assignmentService = $assignmentService;
+        $this->timeLogService = $timeLogService;
+    }
+
     public function index(Request $request)
     {
-        $keyword = $request->get('search');
-        $perPage = 25;
+        $tasks = $this->taskService->getFilteredTasks($request, 25);
+        $filterData = $this->taskService->getFilterData();
 
-        if (!empty($keyword)) {
-            $task = Task::where('name', 'LIKE', "%$keyword%")
-                ->orWhere('description', 'LIKE', "%$keyword%")
-                ->orWhere('d_start', 'LIKE', "%$keyword%")
-                ->orWhere('d_end', 'LIKE', "%$keyword%")
-                ->orWhere('d_close', 'LIKE', "%$keyword%")
-                ->orWhere('status_id', 'LIKE', "%$keyword%")
-                ->orWhere('project_id', 'LIKE', "%$keyword%")
-                ->latest()->paginate($perPage);
-        } else {
-            $task = Task::latest()->paginate($perPage);
+        // Если это AJAX запрос, возвращаем только HTML таблицы
+        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return view('tasks.partials.table', compact('tasks'))->render();
         }
 
-        return view('task.task.index', compact('task'));
+        return view('tasks.index', array_merge(compact('tasks'), $filterData));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\View\View
-     */
     public function create()
     {
+        $filterData = $this->taskService->getFilterData();
 
-        $statuses = Status::all();
-        $projects = Project::all();
-        return view('task.task.create', compact('statuses', 'projects'));
+        return view('tasks.create', $filterData);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
-     */
-    public function store(Request $request)
+    public function store(StoreTaskRequest $request)
     {
+        $task = $this->taskService->createTask($request->validated());
 
-        $requestData = $request->all();
-
-        Task::create($requestData);
-
-        return redirect('task')->with('flash_message', 'Task added!');
+        return redirect()->route('tasks.index')
+            ->with('success', __('ui.task_created_successfully'));
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param int $id
-     *
-     * @return \Illuminate\View\View
-     */
-    public function show($id)
+    public function show(Task $task)
     {
-        $task = Task::findOrFail($id);
+        $task->load([
+            'status', 'project', 'size', 'users',
+            'history.user', 'createdBy', 'updatedBy', 'timeLogs.user'
+        ]);
 
-        return view('task.task.show', compact('task'));
+        $timeStats = $this->taskService->getTaskStats($task);
+        $timeLogStats = $this->timeLogService->getTaskTimeStats($task);
+        $recommendedSize = $task->getRecommendedSize();
+
+        return view('tasks.show', compact('task', 'timeStats', 'timeLogStats', 'recommendedSize'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param int $id
-     *
-     * @return \Illuminate\View\View
-     */
-    public function edit($id)
+    public function edit(Task $task)
     {
-        $task = Task::findOrFail($id);
-        $statuses = Status::all();
-        $projects = Project::all();
+        $task->load('users');
+        $filterData = $this->taskService->getFilterData();
 
-        return view('task.task.edit', compact('task','statuses','projects'));
+        return view('tasks.edit', array_merge(compact('task'), $filterData));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
-     *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
-     */
-    public function update(Request $request, $id)
+    public function update(UpdateTaskRequest $request, Task $task)
     {
+        $this->taskService->updateTask($task, $request->validated());
 
-        $requestData = $request->all();
-
-        $task = Task::findOrFail($id);
-        $task->update($requestData);
-
-        return redirect('task')->with('flash_message', 'Task updated!');
+        return redirect()->route('tasks.index')
+            ->with('success', __('ui.task_updated_successfully'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param int $id
-     *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
-     */
-    public function destroy($id)
+    public function destroy(Task $task)
     {
-        Task::destroy($id);
+        $task->delete();
 
-        return redirect('task')->with('flash_message', 'Task deleted!');
+        return redirect()->route('tasks.index')
+            ->with('success', __('ui.task_deleted_successfully'));
+    }
+
+    // API методы перенесены в TaskApiController
+    public function logTime(LogTimeRequest $request, Task $task)
+    {
+        $validated = $request->validated();
+
+        $this->timeLogService->logTime(
+            $task,
+            $validated['hours'],
+            $validated['description'] ?? null
+        );
+
+        return redirect()->back()
+            ->with('success', __('ui.time_logged_successfully', [
+                'hours' => $validated['hours']
+            ]));
+    }
+    public function addAssignee(Request $request, Task $task)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'role' => 'required|in:assignee,observer,reviewer,manager'
+        ]);
+
+        try {
+            $this->assignmentService->addAssignee($task, $validated['user_id'], $validated['role']);
+
+            return response()->json([
+                'success' => true,
+                'message' => __('ui.assignee_added_successfully')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 422);
+        }
+    }
+
+    public function removeAssignee(Task $task, User $user)
+    {
+        $this->assignmentService->removeAssignee($task, $user);
+
+        return response()->json([
+            'success' => true,
+            'message' => __('ui.assignee_removed_successfully')
+        ]);
+    }
+
+    public function markCompleted(Task $task)
+    {
+        $task->markAsCompleted(auth()->user());
+
+        return redirect()->back()
+            ->with('success', __('ui.task_marked_completed'));
+    }
+
+    public function reopen(Task $task)
+    {
+        $task->update(['completed_date' => null]);
+
+        return redirect()->back()
+            ->with('success', __('ui.task_reopened'));
     }
 }

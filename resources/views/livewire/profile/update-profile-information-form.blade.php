@@ -57,7 +57,7 @@ new class extends Component
         }
 
         $user->sendEmailVerificationNotification();
-        Session::flash('status', 'verification-link-sent');
+        Session::flash('statuses', 'verification-link-sent');
     }
 }; ?>
 
@@ -94,7 +94,7 @@ new class extends Component
                         </button>
                     </p>
 
-                    @if (session('status') === 'verification-link-sent')
+                    @if (session('statuses') === 'verification-link-sent')
                         <p class="mt-2 font-medium text-sm text-green-600 dark:text-green-400">
                             {{ __('ui.verification_link_sent') }}
                         </p>

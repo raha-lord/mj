@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 
 use App\Models\Project;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
+use Illuminate\View\View;
 
 class ProjectController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function index(Request $request)
     {
@@ -28,25 +31,25 @@ class ProjectController extends Controller
             $project = Project::latest()->paginate($perPage);
         }
 
-        return view('project.project.index', compact('project'));
+        return view('projects.index', compact('project'));
     }
 
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function create()
     {
-        return view('project.project.create');
+        return view('projects.create');
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @return RedirectResponse|Redirector
      */
     public function store(Request $request)
     {
@@ -55,7 +58,7 @@ class ProjectController extends Controller
 
         Project::create($requestData);
 
-        return redirect('project')->with('flash_message', 'Project added!');
+        return redirect('projects')->with('flash_message', 'Project added!');
     }
 
     /**
@@ -63,13 +66,13 @@ class ProjectController extends Controller
      *
      * @param int $id
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function show($id)
     {
         $project = Project::findOrFail($id);
 
-        return view('project.project.show', compact('project'));
+        return view('projects.show', compact('project'));
     }
 
     /**
@@ -77,22 +80,22 @@ class ProjectController extends Controller
      *
      * @param int $id
      *
-     * @return \Illuminate\View\View
+     * @return View
      */
     public function edit($id)
     {
         $project = Project::findOrFail($id);
 
-        return view('project.project.edit', compact('project'));
+        return view('projects.edit', compact('project'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param int $id
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @return RedirectResponse|Redirector
      */
     public function update(Request $request, $id)
     {
@@ -102,7 +105,7 @@ class ProjectController extends Controller
         $project = Project::findOrFail($id);
         $project->update($requestData);
 
-        return redirect('project')->with('flash_message', 'Project updated!');
+        return redirect('projects')->with('flash_message', 'Project updated!');
     }
 
     /**
@@ -110,12 +113,12 @@ class ProjectController extends Controller
      *
      * @param int $id
      *
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     * @return RedirectResponse|Redirector
      */
     public function destroy($id)
     {
         Project::destroy($id);
 
-        return redirect('project')->with('flash_message', 'Project deleted!');
+        return redirect('projects')->with('flash_message', 'Project deleted!');
     }
 }

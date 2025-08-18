@@ -27,7 +27,7 @@ new #[Layout('layouts.guest')] class extends Component
         }
 
         $this->reset('email');
-        session()->flash('status', __($status));
+        session()->flash('statuses', __($status));
     }
 }; ?>
 
@@ -37,7 +37,7 @@ new #[Layout('layouts.guest')] class extends Component
     </div>
 
     <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-auth-session-status class="mb-4" :status="session('statuses')" />
 
     <form wire:submit="sendPasswordResetLink">
         <!-- Email Address -->

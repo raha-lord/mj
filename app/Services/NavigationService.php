@@ -17,9 +17,9 @@ class NavigationService
         // Роуты которые нужно показывать в меню
         $allowedRoutes = [
             'dashboard' => 'Главная',
-            'project.index' => 'Проекты',
-            'status.index' => 'Статусы',
-            'task.index' => 'Задачи',
+            'projects.index' => 'Проекты',
+            'statuses.index' => 'Статусы',
+            'tasks.index' => 'Задачи',
         ];
 
         foreach ($allowedRoutes as $routeName => $title) {

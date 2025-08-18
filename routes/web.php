@@ -7,33 +7,51 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Public Routes (без авторизации)
+| Web Routes
 |--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
 */
 
 Route::view('/', 'welcome');
 
-// Роуты авторизации (login, register, etc.)
+Route::view('dashboard', 'dashboard')
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
+Route::view('profile', 'profile')
+    ->middleware(['auth'])
+    ->name('profile');
+
 require __DIR__.'/auth.php';
 
-/*
-|--------------------------------------------------------------------------
-| Protected Routes (требуют авторизации)
-|--------------------------------------------------------------------------
-*/
+// Защищенные маршруты (требуют авторизации)
+Route::middleware(['auth'])->group(function () {
 
-Route::middleware(['auth', 'verified'])->group(function () {
+    // Основные CRUD ресурсы
+    Route::resource('statuses', StatusController::class);
+    Route::resource('projects', ProjectController::class);
+    Route::resource('tasks', TaskController::class);
 
-    // Главная страница
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    // Дополнительные web-маршруты для задач
+    Route::prefix('tasks')->name('tasks.')->group(function () {
+        // Действия, которые выполняются через формы (POST/PATCH запросы)
+        Route::post('{task}/log-time', [TaskController::class, 'logTime'])
+            ->name('log-time');
 
-    // Профиль пользователя
-    Route::view('profile', 'profile')->name('profile');
+        Route::patch('{task}/complete', [TaskController::class, 'markCompleted'])
+            ->name('complete');
 
-    // Все CRUD роуты
-    Route::resource('status', StatusController::class);
-    Route::resource('project', ProjectController::class);
-    Route::resource('task', TaskController::class);
+        Route::patch('{task}/reopen', [TaskController::class, 'reopen'])
+            ->name('reopen');
 
-    // Добавьте сюда все остальные защищенные роуты
+        // AJAX эндпоинты для получения данных
+        Route::get('size-recommendation', [TaskController::class, 'getSizeRecommendation'])
+            ->name('size-recommendation');
+    });
 });
+
+Route::post('tasks/{task}/log-time', [TaskController::class, 'logTime'])->name('tasks.log-time');
