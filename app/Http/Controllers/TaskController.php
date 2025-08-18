@@ -31,6 +31,11 @@ class TaskController extends Controller
         $tasks = $this->taskService->getFilteredTasks($request, 25);
         $filterData = $this->taskService->getFilterData();
 
+        // Если это AJAX запрос, возвращаем только HTML таблицы
+        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return view('tasks.partials.table', compact('tasks'))->render();
+        }
+
         return view('tasks.index', array_merge(compact('tasks'), $filterData));
     }
 

@@ -6,20 +6,86 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LogTimeRequest;
 use App\Http\Requests\AddAssigneeRequest;
+use App\Http\Requests\StoreTaskRequest;
 use App\Models\Task;
 use App\Models\TaskSize;
 use App\Models\User;
 use App\Services\TaskAssignmentService;
+use App\Services\TaskService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TaskApiController extends Controller
 {
     protected TaskAssignmentService $assignmentService;
+    protected TaskService $taskService;
 
-    public function __construct(TaskAssignmentService $assignmentService)
+    public function __construct(TaskAssignmentService $assignmentService, TaskService $taskService)
     {
         $this->assignmentService = $assignmentService;
+        $this->taskService = $taskService;
+    }
+
+    /**
+     * Получить отфильтрованные задачи
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $tasks = $this->taskService->getFilteredTasks($request, 25);
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'tasks' => $tasks->items(),
+                'pagination' => [
+                    'current_page' => $tasks->currentPage(),
+                    'last_page' => $tasks->lastPage(),
+                    'per_page' => $tasks->perPage(),
+                    'total' => $tasks->total(),
+                    'from' => $tasks->firstItem(),
+                    'to' => $tasks->lastItem()
+                ]
+            ]
+        ]);
+    }
+
+    /**
+     * Создать новую задачу
+     */
+    public function store(StoreTaskRequest $request): JsonResponse
+    {
+        try {
+            $task = $this->taskService->createTask($request->validated());
+            
+            // Загружаем связи для полного ответа
+            $task->load(['status', 'project', 'size', 'assignees', 'createdBy']);
+            
+            return response()->json([
+                'success' => true,
+                'message' => __('ui.task_created_successfully'),
+                'data' => $task
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ошибка при создании задачи: ' . $e->getMessage()
+            ], 422);
+        }
+    }
+
+    /**
+     * Получить HTML таблицы задач для AJAX
+     */
+    public function tableHtml(Request $request): JsonResponse
+    {
+        $tasks = $this->taskService->getFilteredTasks($request, 25);
+        
+        $html = view('tasks.partials.table', compact('tasks'))->render();
+        
+        return response()->json([
+            'success' => true,
+            'html' => $html
+        ]);
     }
 
     /**

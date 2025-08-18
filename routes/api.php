@@ -21,7 +21,17 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // API для работы с задачами
-Route::middleware('auth:sanctum')->prefix('tasks')->name('api.tasks.')->group(function () {
+Route::middleware(['web', 'auth'])->prefix('tasks')->name('api.tasks.')->group(function () {
+
+    // CRUD операции
+    Route::get('/', [TaskApiController::class, 'index'])
+        ->name('index');
+    
+    Route::post('/', [TaskApiController::class, 'store'])
+        ->name('store');
+    
+    Route::get('/table-html', [TaskApiController::class, 'tableHtml'])
+        ->name('table-html');
 
     // Работа с временем
     Route::post('{task}/log-time', [TaskApiController::class, 'logTime'])
@@ -55,7 +65,7 @@ Route::middleware('auth:sanctum')->prefix('tasks')->name('api.tasks.')->group(fu
         ->name('size-stats');
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
     // Записи времени
     Route::get('tasks/{task}/time-logs', [TimeLogController::class, 'index']);
     Route::post('tasks/{task}/time-logs', [TimeLogController::class, 'store']);
@@ -65,7 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('tasks/{task}/time-logs/deleted', [TimeLogController::class, 'deleted']);
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
     Route::delete('time-logs/{timeLog}', [TimeLogController::class, 'destroy'])->name('api.time-logs.destroy');
     Route::put('time-logs/{timeLog}', [TimeLogController::class, 'update'])->name('api.time-logs.update');
 });
