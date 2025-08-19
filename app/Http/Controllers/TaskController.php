@@ -39,6 +39,13 @@ class TaskController extends Controller
         return view('tasks.index', array_merge(compact('tasks'), $filterData));
     }
 
+    public function indexVue(Request $request)
+    {
+        $filterData = $this->taskService->getFilterData();
+
+        return view('tasks.index-vue', $filterData);
+    }
+
     public function create()
     {
         $filterData = $this->taskService->getFilterData();

@@ -36,6 +36,16 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('projects', ProjectController::class);
     Route::resource('tasks', TaskController::class);
 
+    // Vue версия страницы задач с Headless UI
+    Route::get('tasks-vue', [TaskController::class, 'indexVue'])
+        ->name('tasks.vue');
+
+    // Демо страница для сравнения реализаций
+    Route::view('demo', 'demo')->name('demo');
+
+    // Тестовая страница для отладки модалок
+    Route::view('test-modal', 'test-modal')->name('test-modal');
+
     // Дополнительные web-маршруты для задач
     Route::prefix('tasks')->name('tasks.')->group(function () {
         // Действия, которые выполняются через формы (POST/PATCH запросы)
