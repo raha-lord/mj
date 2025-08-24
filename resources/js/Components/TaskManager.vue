@@ -1,17 +1,24 @@
 <template>
   <div>
     <!-- Уведомления -->
-    <div v-if="notification.show" :class="notificationClasses" class="mb-4 px-4 py-3 rounded-lg relative">
-      <span class="block sm:inline">{{ notification.message }}</span>
-      <button
-        type="button"
-        class="absolute top-0 bottom-0 right-0 px-4 py-3"
-        @click="hideNotification"
+    <div v-if="notifications.notifications.value.length > 0">
+      <div
+        v-for="notification in notifications.notifications.value"
+        :key="notification.id"
+        :class="getNotificationClasses(notification.type)"
+        class="mb-4 px-4 py-3 rounded-lg relative"
       >
-        <svg class="fill-current h-6 w-6" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-          <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
-        </svg>
-      </button>
+        <span class="block sm:inline">{{ notification.message }}</span>
+        <button
+          type="button"
+          class="absolute top-0 bottom-0 right-0 px-4 py-3"
+          @click="notifications.hideNotification(notification.id)"
+        >
+          <svg class="fill-current h-6 w-6" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+            <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!-- Кнопка создания задачи -->
@@ -20,7 +27,7 @@
         Задачи
       </h2>
       <button
-        @click="openCreateModal"
+        @click="taskModal.openCreateModal"
         class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center"
       >
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,8 +40,9 @@
     <!-- Фильтры -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
       <div class="p-6">
-        <form @submit.prevent="applyFilters" class="space-y-4">
+        <form @submit.prevent="tasksList.applyFilters" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            
             <!-- Поиск -->
             <div>
               <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -42,7 +50,7 @@
               </label>
               <input
                 id="search"
-                v-model="filters.search"
+                v-model="tasksList.filters.search"
                 type="text"
                 placeholder="Поиск задач..."
                 class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
@@ -57,9 +65,9 @@
               </label>
               <select
                 id="status"
-                v-model="filters.status"
+                v-model="tasksList.filters.status"
                 class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                @change="applyFilters"
+                @change="tasksList.applyFilters"
               >
                 <option value="">Все статусы</option>
                 <option v-for="status in statuses" :key="status.slug" :value="status.slug">
@@ -75,15 +83,14 @@
               </label>
               <select
                 id="priority"
-                v-model="filters.priority"
+                v-model="tasksList.filters.priority"
                 class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                @change="applyFilters"
+                @change="tasksList.applyFilters"
               >
                 <option value="">Все приоритеты</option>
-                <option value="low">Низкий</option>
-                <option value="normal">Обычный</option>
-                <option value="high">Высокий</option>
-                <option value="urgent">Срочный</option>
+                <option v-for="priority in PRIORITY_OPTIONS" :key="priority.value" :value="priority.value">
+                  {{ priority.label }}
+                </option>
               </select>
             </div>
 
@@ -97,7 +104,7 @@
               </button>
               <button
                 type="button"
-                @click="clearFilters"
+                @click="tasksList.clearFilters"
                 class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
               >
                 Очистить
@@ -111,115 +118,47 @@
     <!-- Таблица задач -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
       <!-- Индикатор загрузки -->
-      <div v-if="tasksLoading" class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span class="ml-2 text-gray-600 dark:text-gray-300">Загрузка...</span>
+      <div v-if="tasksList.loading.value" class="flex justify-center items-center py-12">
+        <LoadingSpinner size="md" :show-text="true" text="Загрузка задач..." />
       </div>
       
-      <div v-else id="tasksTable" v-html="tasksHtml"></div>
+      <!-- Vue компоненты вместо HTML -->
+      <TasksTable
+        v-else
+        :tasks="tasksList.tasks.value"
+        :loading="tasksList.loading.value"
+        @view="taskModal.openViewModal"
+        @edit="taskModal.openEditModal"
+        @delete="handleDeleteTask"
+      />
     </div>
 
-    <!-- Модальные окна -->
+    <!-- Модальное окно задачи -->
     <TaskModal
-      :is-open="modals.task.isOpen"
-      :task="modals.task.data"
+      :is-open="taskModal.isOpen.value"
+      :task="taskModal.task.value"
+      :loading="taskModal.loading.value"
+      :mode="taskModal.mode.value"
       :projects="projects"
       :statuses="statuses"
       :sizes="sizes"
       :users="users"
-      @close="closeTaskModal"
-      @submit="handleTaskSubmit"
-      ref="taskModalRef"
+      @close="taskModal.closeModal"
+      @submit="handleTaskSave"
     />
-
-    <!-- Единое модальное окно просмотра/редактирования задачи -->
-    <Modal
-      :is-open="modals.view.isOpen"
-      :title="viewMode === 'edit' ? 'Редактирование задачи' : 'Просмотр задачи'"
-      size="2xl"
-      max-height="80vh"
-      :show-footer="true"
-      :show-cancel-button="false"
-      :show-confirm-button="false"
-      @close="closeViewModal"
-    >
-      <!-- Loading state -->
-      <div v-if="viewTaskLoading" class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span class="ml-2 text-gray-600 dark:text-gray-300">Загрузка задачи...</span>
-      </div>
-
-      <!-- Task content -->
-      <div v-else-if="modals.view.data" class="space-y-6">
-        <!-- Mode switcher -->
-        <div class="flex space-x-2 mb-4">
-          <button
-            @click="handleViewModeSwitch('view')"
-            :class="viewMode === 'view' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300'"
-            class="px-4 py-2 rounded-md transition-colors duration-200"
-          >
-            Просмотр
-          </button>
-          <button
-            @click="handleViewModeSwitch('edit')"
-            :class="viewMode === 'edit' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300'"
-            class="px-4 py-2 rounded-md transition-colors duration-200"
-          >
-            Редактирование
-          </button>
-        </div>
-
-        <!-- View mode content -->
-        <TaskViewContent
-          v-if="viewMode === 'view'"
-          :task="modals.view.data"
-        />
-
-        <!-- Edit mode content -->
-        <TaskEditContent
-          v-else
-          :task="modals.view.data"
-          :projects="projects"
-          :statuses="statuses"
-          :sizes="sizes"
-          :users="users"
-          @close="handleEditModalClose"
-          @submit="handleTaskSubmit"
-          ref="editTaskModalRef"
-        />
-      </div>
-
-      <template #footer>
-        <div class="flex justify-between w-full">
-          <button
-            v-if="modals.view.data && viewMode === 'view'"
-            @click="handleViewModeSwitch('edit')"
-            class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Редактировать
-          </button>
-          <div v-else></div>
-          
-          <button
-            @click="closeViewModal"
-            class="inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Закрыть
-          </button>
-        </div>
-      </template>
-    </Modal>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick } from 'vue'
-import Modal from './Modal.vue'
+import { ref, onMounted } from 'vue'
+import { debounce } from '@/utils/helpers.js'
+import { PRIORITY_OPTIONS, NOTIFICATION_CLASSES } from '@/utils/constants.js'
+import { useTasksList } from '@/composables/features/useTasksList.js'
+import { useTaskModal } from '@/composables/features/useTaskModal.js'
+import { useNotifications } from '@/composables/ui/useNotifications.js'
 import TaskModal from './TaskModal.vue'
-import TaskViewModal from './TaskViewModal.vue'
-import TaskViewContent from './TaskViewContent.vue'
-import TaskEditContent from './TaskEditContent.vue'
-import { useTasks } from '../composables/useTasks-fixed.js'
+import TasksTable from './tasks/TasksTable.vue'
+import LoadingSpinner from './shared/LoadingSpinner.vue'
 
 const props = defineProps({
   initialData: {
@@ -228,379 +167,51 @@ const props = defineProps({
   }
 })
 
-// Composables
-const { loading: tasksLoading, createTask, updateTask, getTask, getTasks } = useTasks()
+// Features слой - композиция простых блоков
+const tasksList = useTasksList()
+const taskModal = useTaskModal()
+const notifications = useNotifications()
 
-// Reactive data
-const filters = reactive({
-  search: '',
-  status: '',
-  priority: ''
-})
-
-const modals = reactive({
-  task: {
-    isOpen: false,
-    data: null
-  },
-  view: {
-    isOpen: false,
-    data: null
-  }
-})
-
-const notification = reactive({
-  show: false,
-  message: '',
-  type: 'success'
-})
-
-// Refs
-const tasksHtml = ref('')
-const taskViewHtml = ref('')
-const viewTaskLoading = ref(false)
-const viewMode = ref('view')
-const taskModalRef = ref(null)
-const editTaskModalRef = ref(null)
-
-// Static data (получаем из пропсов или API)
+// Static data
 const projects = ref(props.initialData.projects || [])
 const statuses = ref(props.initialData.statuses || [])
 const sizes = ref(props.initialData.sizes || [])
 const users = ref(props.initialData.users || [])
 
-// Computed
-const notificationClasses = computed(() => {
-  const baseClasses = 'border rounded-lg'
-  const typeClasses = {
-    success: 'bg-green-50 border-green-200 text-green-700',
-    error: 'bg-red-50 border-red-200 text-red-700',
-    warning: 'bg-yellow-50 border-yellow-200 text-yellow-700'
-  }
-  return `${baseClasses} ${typeClasses[notification.type] || typeClasses.success}`
-})
-
-// Debounced filter function
-let filterTimeout = null
-const debouncedFilter = () => {
-  clearTimeout(filterTimeout)
-  filterTimeout = setTimeout(() => {
-    applyFilters()
-  }, 500)
+// UI helpers
+const getNotificationClasses = (type) => {
+  return `border rounded-lg ${NOTIFICATION_CLASSES[type] || NOTIFICATION_CLASSES.success}`
 }
 
-// Methods
-const showNotification = (message, type = 'success') => {
-  notification.message = message
-  notification.type = type
-  notification.show = true
-  
-  setTimeout(() => {
-    notification.show = false
-  }, 5000)
-}
+// Debounced filter
+const debouncedFilter = debounce(() => {
+  tasksList.applyFilters()
+}, 500)
 
-const hideNotification = () => {
-  notification.show = false
-}
-
-const loadTasks = async () => {
-  try {
-    console.log('📝 ОБНОВЛЕНИЕ СПИСКА ЗАДАЧ - это должно происходить ТОЛЬКО при сохранении или фильтрации!')
-    const result = await getTasks(filters)
-    tasksHtml.value = result.html
-
-    // Обновляем URL
-    const url = new URL(window.location.href)
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) {
-        url.searchParams.set(key, value)
-      } else {
-        url.searchParams.delete(key)
-      }
-    })
-    window.history.pushState({}, '', url)
-  } catch (error) {
-    console.error('Ошибка загрузки задач:', error)
-    showNotification('Ошибка при загрузке задач', 'error')
+// Event handlers - явные действия
+const handleTaskSave = async (taskData) => {
+  const success = await taskModal.saveTask(taskData)
+  if (success) {
+    // Явно обновляем список после сохранения
+    await tasksList.refreshTasks()
   }
 }
 
-const applyFilters = () => {
-  loadTasks()
-}
-
-const clearFilters = () => {
-  Object.keys(filters).forEach(key => {
-    filters[key] = ''
-  })
-  loadTasks()
-}
-
-const openCreateModal = () => {
-  modals.task.data = null
-  modals.task.isOpen = true
-}
-
-const openEditModal = (task) => {
-  modals.task.data = task
-  modals.task.isOpen = true
-}
-
-const closeTaskModal = () => {
-  modals.task.isOpen = false
-  modals.task.data = null
-}
-
-const openViewModal = async (taskId) => {
-  console.log('🔍 Открытие модального окна просмотра задачи (БЕЗ обновления списка):', taskId)
-  modals.view.isOpen = true
-  viewTaskLoading.value = true
-  viewMode.value = 'view'
-
-  try {
-    const task = await getTask(taskId)
-    modals.view.data = task
-    console.log('✅ Задача загружена для просмотра (список задач НЕ обновлялся)')
-  } catch (error) {
-    console.error('Ошибка загрузки задачи:', error)
-    showNotification('Ошибка при загрузке задачи', 'error')
-    closeViewModal()
-  } finally {
-    viewTaskLoading.value = false
-  }
-}
-
-const closeViewModal = () => {
-  modals.view.isOpen = false
-  modals.view.data = null
-  taskViewHtml.value = ''
-}
-
-const switchToEditMode = () => {
-  viewMode.value = 'edit'
-}
-
-const handleViewModeSwitch = (mode) => {
-  viewMode.value = mode
-}
-
-const handleEditModalClose = () => {
-  viewMode.value = 'view'
-}
-
-const renderTaskView = (task) => {
-  // Генерируем HTML для просмотра задачи
-  taskViewHtml.value = `
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg space-y-6">
-      <div class="border-b border-gray-200 dark:border-gray-700 pb-4">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">${task.name}</h2>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">ID: #${task.id}</p>
-      </div>
-      
-      ${task.description ? `
-        <div>
-          <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Описание</h3>
-          <p class="text-gray-700 dark:text-gray-300">${task.description}</p>
-        </div>
-      ` : ''}
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="space-y-4">
-          <div>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Проект</span>
-            <p class="text-gray-900 dark:text-white">${task.project ? task.project.name : '—'}</p>
-          </div>
-          
-          <div>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Статус</span>
-            <div class="mt-1">
-              ${task.status ? `
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
-                      style="background-color: ${task.status.color}20; color: ${task.status.color};">
-                  ${task.status.name}
-                </span>
-              ` : '—'}
-            </div>
-          </div>
-          
-          <div>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Приоритет</span>
-            <div class="mt-1">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium priority-${task.priority}">
-                ${task.priority}
-              </span>
-            </div>
-          </div>
-          
-          ${task.size ? `
-            <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Размер</span>
-              <p class="text-gray-900 dark:text-white">${task.size.code} - ${task.size.name}</p>
-            </div>
-          ` : ''}
-        </div>
-        
-        <div class="space-y-4">
-          ${task.estimated_hours ? `
-            <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Оценка времени</span>
-              <p class="text-gray-900 dark:text-white">${task.estimated_hours} часов</p>
-            </div>
-          ` : ''}
-          
-          ${task.due_date ? `
-            <div>
-              <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Срок выполнения</span>
-              <p class="text-gray-900 dark:text-white">${new Date(task.due_date).toLocaleDateString('ru-RU')}</p>
-            </div>
-          ` : ''}
-          
-          <div>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Создана</span>
-            <p class="text-gray-900 dark:text-white">${new Date(task.created_at).toLocaleDateString('ru-RU')}</p>
-          </div>
-          
-          <div>
-            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Автор</span>
-            <p class="text-gray-900 dark:text-white">${task.created_by ? task.created_by.name : '—'}</p>
-          </div>
-        </div>
-      </div>
-      
-      ${task.assignees && task.assignees.length > 0 ? `
-        <div>
-          <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Исполнители</span>
-          <div class="mt-2 flex flex-wrap gap-2">
-            ${task.assignees.map(assignee => `
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                ${assignee.name}
-              </span>
-            `).join('')}
-          </div>
-        </div>
-      ` : ''}
-    </div>
-  `
-}
-
-const handleTaskSubmit = async ({ data, isEdit, taskId }) => {
-  try {
-    let result
-    const modalRef = isEdit ? editTaskModalRef.value : taskModalRef.value
-
-    if (modalRef) {
-      modalRef.setLoading(true)
-    }
-
-    if (isEdit) {
-      result = await updateTask(taskId, data)
-      // Обновляем данные задачи в модальном окне просмотра
-      if (result.success && result.data) {
-        modals.view.data = result.data
-      }
-    } else {
-      result = await createTask(data)
-    }
-
-    showNotification(result.message || (isEdit ? 'Задача обновлена' : 'Задача создана'))
-
-    // Закрываем модальные окна
-    if (!isEdit) {
-      closeTaskModal()
-      // Обновляем список задач только при создании новой задачи
-      if (tasksHtml.value) {
-        await loadTasks()
-      }
-    } else {
-      // При редактировании возвращаемся к просмотру
-      viewMode.value = 'view'
-      // Обновляем список задач только при сохранении изменений
-      if (tasksHtml.value) {
-        await loadTasks()
-      }
-    }
-
-  } catch (error) {
-    console.error('Ошибка сохранения задачи:', error)
-
-    const modalRef = isEdit ? editTaskModalRef.value : taskModalRef.value
-    if (modalRef && error.errors) {
-      modalRef.setErrors(error.errors)
-    }
-
-    const message = error.message || 'Ошибка при сохранении задачи'
-    showNotification(message, 'error')
-  } finally {
-    const modalRef = isEdit ? editTaskModalRef.value : taskModalRef.value
-    if (modalRef) {
-      modalRef.setLoading(false)
-    }
-  }
-}
-
-// Подключение обработчиков кликов для таблицы
-let tableClickHandlerAttached = false
-
-const attachTableEventHandlers = () => {
-  if (tableClickHandlerAttached) {
-    console.log('Table click handlers already attached')
-    return
-  }
-  
-  // Добавляем обработчик к документу только один раз
-  document.addEventListener('click', handleTableClicks)
-  tableClickHandlerAttached = true
-  console.log('Table click handlers attached')
-}
-
-const handleTableClicks = (e) => {
-  // Обработчики для кнопок просмотра
-  if (e.target.matches('[data-task-view]') || e.target.closest('[data-task-view]')) {
-    e.preventDefault()
-    e.stopPropagation()
-    const button = e.target.matches('[data-task-view]') ? e.target : e.target.closest('[data-task-view]')
-    const taskId = button.getAttribute('data-task-view')
-    console.log('Открытие просмотра задачи:', taskId)
-    openViewModal(taskId)
-  }
-  
-  // Обработчики для кнопок редактирования
-  if (e.target.matches('[data-task-edit]') || e.target.closest('[data-task-edit]')) {
-    e.preventDefault()
-    e.stopPropagation()
-    const button = e.target.matches('[data-task-edit]') ? e.target : e.target.closest('[data-task-edit]')
-    const taskId = button.getAttribute('data-task-edit')
-    console.log('Открытие редактирования задачи:', taskId)
-    openViewModal(taskId).then(() => {
-      setTimeout(() => switchToEditMode(), 100)
-    })
-  }
-
-  // Обработчик для клика по строке таблицы (просмотр)
-  const taskRow = e.target.closest('[data-task-id]')
-  if (taskRow && !e.target.closest('button') && !e.target.closest('a')) {
-    e.stopPropagation()
-    const taskId = taskRow.getAttribute('data-task-id')
-    console.log('Клик по строке задачи:', taskId)
-    openViewModal(taskId)
+const handleDeleteTask = async (taskId) => {
+  if (confirm('Вы уверены, что хотите удалить эту задачу?')) {
+    // TODO: Реализовать удаление через API
+    notifications.showNotification('Функция удаления будет реализована', 'warning')
   }
 }
 
 // Lifecycle
 onMounted(async () => {
-  attachTableEventHandlers()
-  // Автоматически загружаем задачи при открытии страницы
-  await loadTasks()
+  await tasksList.loadTasks()
 })
 
-// Expose methods for global access
-window.openTaskViewModal = openViewModal
-window.openTaskEditModal = (taskId) => {
-  openViewModal(taskId).then(() => {
-    setTimeout(() => switchToEditMode(), 100)
-  })
-}
+// Global access (legacy support)
+window.openTaskViewModal = taskModal.openViewModal
+window.openTaskEditModal = taskModal.openEditModal
 </script>
 
 <style scoped>
