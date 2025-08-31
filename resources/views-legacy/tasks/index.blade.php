@@ -8,21 +8,24 @@
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Vue App Container -->
-            <div id="task-manager" 
-                 data-initial="{{ json_encode([
-                    'projects' => $projects ?? [],
-                    'statuses' => $statuses ?? [],
-                    'sizes' => $sizes ?? [],
-                    'users' => $users ?? []
-                 ]) }}">
+            <div id="task-manager-app">
                 <!-- Fallback content пока Vue не загрузился -->
                 <div class="flex justify-center items-center py-12">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
                     <span class="ml-2 text-gray-600 dark:text-gray-300">Загрузка приложения...</span>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        window.taskManagerInitialData = {
+            projects: @json($projects ?? []),
+            statuses: @json($statuses ?? []),
+            sizes: @json($sizes ?? []),
+            users: @json($users ?? [])
+        };
+    </script>
 
     <style>
         .priority-urgent {

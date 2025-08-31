@@ -50,11 +50,11 @@ const sizeClasses = {
 
 // Варианты кнопок
 const variantClasses = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 disabled:bg-blue-300',
+  primary: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 disabled:bg-green-300',
   secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500 disabled:bg-gray-300',
   danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-300',
   success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 disabled:bg-green-300',
-  outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-400'
+  outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-green-500 disabled:bg-gray-50 disabled:text-gray-400'
 }
 
 // Размер спиннера в зависимости от размера кнопки

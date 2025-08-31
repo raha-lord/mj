@@ -21,23 +21,26 @@
       </div>
     </div>
 
-    <!-- Кнопка создания задачи -->
+    <!-- Кнопка создания задачи и переключатель тем -->
     <div class="flex justify-between items-center mb-6">
       <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
         Задачи
       </h2>
-      <Button
-        @click="taskModal.openCreateModal()"
-        variant="primary"
-        size="md"
-      >
-        <template #icon>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-        </template>
-        Создать задачу
-      </Button>
+      <div class="flex items-center gap-4">
+        <ThemeSelector @theme-changed="handleThemeChange" />
+        <Button
+          @click="taskModal.openCreateModal()"
+          variant="primary"
+          size="md"
+        >
+          <template #icon>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </template>
+          Создать задачу
+        </Button>
+      </div>
     </div>
 
     <!-- Ant Design Фильтры -->
@@ -249,6 +252,7 @@ import FormSelect from './shared/FormSelect.vue'
 import SearchInput from './shared/SearchInput.vue'
 import TasksTableSkeleton from './shared/TasksTableSkeleton.vue'
 import TaskFormSkeleton from './shared/TaskFormSkeleton.vue'
+import ThemeSelector from './shared/ThemeSelector.vue'
 import { SearchOutlined } from '@ant-design/icons-vue'
 
 // Регистрируем компоненты
@@ -321,8 +325,8 @@ const tableColumns = [
 // Helper функции для цветов
 const getStatusColor = (status) => {
   const colors = {
-    'new': 'blue',
-    'in-progress': 'orange',
+    'new': 'cyan',
+    'in-progress': 'geekblue',
     'completed': 'green',
     'cancelled': 'red'
   }
@@ -332,7 +336,7 @@ const getStatusColor = (status) => {
 const getPriorityColor = (priority) => {
   const colors = {
     'low': 'green',
-    'normal': 'blue',
+    'normal': 'geekblue',
     'high': 'orange',
     'urgent': 'red'
   }
@@ -370,6 +374,11 @@ const handleDeleteTask = async (taskId) => {
   }
 }
 
+const handleThemeChange = (themeName) => {
+  console.log('Theme changed in TaskManager:', themeName)
+  // Можно добавить дополнительную логику при смене темы
+}
+
 // Lifecycle
 onMounted(async () => {
   await tasksList.loadTasks()
@@ -380,7 +389,8 @@ window.openTaskViewModal = taskModal.openViewModal
 window.openTaskEditModal = taskModal.openEditModal
 </script>
 
-<style scoped>
+<style>
+/* Кастомные классы для приоритетов */
 .priority-urgent {
   background-color: rgb(254, 226, 226);
   color: rgb(153, 27, 27);
