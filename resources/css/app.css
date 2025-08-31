@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ant Design пагинация - ширина селектора количества записей */
+.ant-pagination-options .ant-select {
+    min-width: 80px !important;
+}
+
+.ant-pagination-options .ant-select .ant-select-selector {
+    min-width: 80px !important;
+}
+
 @layer components {
     .task-card {
         @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4;

@@ -1,5 +1,7 @@
 import './bootstrap';
 import { createApp } from 'vue';
+import Antd from 'ant-design-vue';
+import 'ant-design-vue/dist/reset.css';
 
 // Импортируем компоненты
 import TaskManager from './Components/TaskManager.vue';
@@ -10,6 +12,7 @@ import TestTaskModal from './Components/TestTaskModal.vue';
 import SimpleTaskManager from './Components/SimpleTaskManager.vue';
 import WorkingTaskManager from './Components/WorkingTaskManager.vue';
 import SimpleModal from './Components/SimpleModal.vue';
+import { ConfigProvider } from 'ant-design-vue';
 
 // Создаем приложение Vue только если есть элемент для монтирования
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,18 +22,27 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Монтируем TaskManager App...');
         try {
             console.log('Создаем Vue приложение...');
-            
+
             const app = createApp({
                 components: {
+                    'a-config-provider': ConfigProvider,
                     'task-manager': TaskManager
                 },
-                template: '<task-manager :initial-data="initialData"></task-manager>',
+                // Убираем свойство "theme" или оставляем его пустым
+                template: `
+                  <a-config-provider>
+                    <task-manager :initial-data="initialData"></task-manager>
+                  </a-config-provider>
+                `,
                 data() {
                     return {
                         initialData: window.taskManagerInitialData || {}
                     }
                 }
             });
+            
+            // Подключаем Ant Design
+            app.use(Antd);
             
             // Добавляем обработчик ошибок Vue
             app.config.errorHandler = (err, instance, info) => {
@@ -85,6 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 initialData
             });
             
+            // Подключаем Ant Design
+            app.use(Antd);
+            
             // Добавляем обработчик ошибок Vue
             app.config.errorHandler = (err, instance, info) => {
                 console.error('Vue ошибка:', err);
@@ -128,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Монтируем SimpleModal...');
         try {
             const app = createApp(SimpleModal);
+            app.use(Antd);
             app.mount('#simple-modal-test');
             console.log('SimpleModal смонтирован');
         } catch (error) {

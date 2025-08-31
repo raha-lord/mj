@@ -22,6 +22,7 @@ export function useTaskModal() {
     // Изолированное состояние только для модалки
     const task = ref(null)
     const loading = ref(false)
+    const preparing = ref(false) // новое состояние для подготовки модалки
     const mode = ref('view') // 'view', 'edit', 'create'
 
     // UI и API слои
@@ -38,22 +39,25 @@ export function useTaskModal() {
             return
         }
 
+        // Показываем индикатор подготовки (можно показать скелетон или спиннер)
         mode.value = 'view'
         task.value = null
-        loading.value = true
-        modal.open()
+        preparing.value = true
 
         try {
+            // Сначала загружаем данные
             const taskData = await tasksApi.getTask(taskId)
             task.value = taskData
+            
+            // Только после успешной загрузки открываем модалку
+            modal.open()
         } catch (error) {
             notifications.showNotification(
                 'Ошибка загрузки задачи: ' + error.message, 
                 'error'
             )
-            modal.close()
         } finally {
-            loading.value = false
+            preparing.value = false
         }
     }
 
@@ -66,22 +70,25 @@ export function useTaskModal() {
             return
         }
 
+        // Показываем индикатор подготовки
         mode.value = 'edit'
         task.value = null
-        loading.value = true
-        modal.open()
+        preparing.value = true
 
         try {
+            // Сначала загружаем данные
             const taskData = await tasksApi.getTask(taskId)
             task.value = taskData
+            
+            // Только после успешной загрузки открываем модалку
+            modal.open()
         } catch (error) {
             notifications.showNotification(
                 'Ошибка загрузки задачи: ' + error.message, 
                 'error'
             )
-            modal.close()
         } finally {
-            loading.value = false
+            preparing.value = false
         }
     }
 
@@ -145,6 +152,7 @@ export function useTaskModal() {
         // Состояние только для модалки
         task: readonly(task),
         loading: readonly(loading),
+        preparing: readonly(preparing),
         mode: readonly(mode),
         isOpen: modal.isOpen,
 

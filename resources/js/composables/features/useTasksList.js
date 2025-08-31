@@ -29,7 +29,9 @@ export function useTasksList() {
         priority: '',
         size: '',
         date_from: '',
-        date_to: ''
+        date_to: '',
+        page: 1,
+        per_page: 25
     })
 
     // API слой
@@ -77,6 +79,7 @@ export function useTasksList() {
      */
     const applyFilters = async (newFilters = {}) => {
         Object.assign(filters, newFilters)
+        filters.page = 1 // Сброс на первую страницу при изменении фильтров
         return await loadTasks()
     }
 
@@ -85,7 +88,13 @@ export function useTasksList() {
      */
     const clearFilters = async () => {
         Object.keys(filters).forEach(key => {
-            filters[key] = ''
+            if (key === 'page') {
+                filters[key] = 1
+            } else if (key === 'per_page') {
+                filters[key] = 25
+            } else {
+                filters[key] = ''
+            }
         })
         return await loadTasks()
     }
@@ -107,6 +116,32 @@ export function useTasksList() {
         return await loadTasks()
     }
 
+    /**
+     * Изменить страницу
+     */
+    const changePage = async (page) => {
+        filters.page = page
+        return await loadTasks()
+    }
+
+    /**
+     * Изменить количество записей на странице
+     */
+    const changePerPage = async (currentPage, perPage) => {
+        console.log('changePerPage called with:', { currentPage, perPage })
+        filters.per_page = Number(perPage)
+        filters.page = 1 // Сброс на первую страницу
+        console.log('Updated filters:', { page: filters.page, per_page: filters.per_page })
+        return await loadTasks()
+    }
+
+    /**
+     * Сброс пагинации на первую страницу
+     */
+    const resetPagination = () => {
+        filters.page = 1
+    }
+
     return {
         // Состояние только для списка
         tasks: readonly(tasks),
@@ -120,6 +155,11 @@ export function useTasksList() {
         applyFilters,
         clearFilters,
         updateFilter,
-        refreshTasks
+        refreshTasks,
+        
+        // Методы пагинации
+        changePage,
+        changePerPage,
+        resetPagination
     }
 }

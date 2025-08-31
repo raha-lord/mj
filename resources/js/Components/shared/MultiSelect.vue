@@ -7,11 +7,11 @@
     <select
       :id="id"
       :value="modelValue"
-      @input="$emit('update:modelValue', $event.target.value)"
+      @input="$emit('update:modelValue', Array.from($event.target.selectedOptions, option => option.value))"
       :class="selectClasses"
       :required="required"
+      multiple
     >
-      <option v-if="placeholder" value="">{{ placeholder }}</option>
       <option 
         v-for="option in options" 
         :key="getOptionValue(option)" 
@@ -32,7 +32,10 @@ import { computed } from 'vue'
 const props = defineProps({
   id: String,
   label: String,
-  modelValue: [String, Number],
+  modelValue: {
+    type: Array,
+    default: () => []
+  },
   options: {
     type: Array,
     required: true
@@ -45,7 +48,6 @@ const props = defineProps({
     type: String,
     default: 'name'
   },
-  placeholder: String,
   required: Boolean,
   error: String
 })

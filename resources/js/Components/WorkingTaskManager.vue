@@ -110,7 +110,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import TaskModal from './TaskModal.vue'
-import { useTasks } from '../composables/useTasks-fixed.js'
+import { useTasks } from '@/composables/api/useTasks.js'
 
 console.log('WorkingTaskManager загружается...')
 

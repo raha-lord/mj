@@ -2,7 +2,7 @@
   <Modal
     :is-open="isOpen"
     :title="isEditMode ? 'Редактирование задачи' : 'Создание задачи'"
-    size="2xl"
+    size="xl"
     :show-footer="true"
     :show-cancel-button="true"
     :show-confirm-button="true"
@@ -12,182 +12,110 @@
     @confirm="handleSubmit"
   >
     <!-- Loading state -->
-    <div v-if="loading" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span class="ml-2 text-gray-600 dark:text-gray-300">{{ loadingText }}</span>
-    </div>
+    <TaskFormSkeleton v-if="loading" />
 
     <!-- Form -->
     <form v-else @submit.prevent="handleSubmit" class="space-y-4">
       <!-- Название -->
-      <div>
-        <label for="task_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Название <span class="text-red-500">*</span>
-        </label>
-        <input
-          id="task_name"
-          v-model="form.name"
-          type="text"
-          required
-          class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          :class="{ 'border-red-500': errors.name }"
-        />
-        <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name[0] }}</p>
-      </div>
+      <TextInput
+        id="task_name"
+        v-model="form.name"
+        label="Название"
+        required
+        :error="errors.name?.[0]"
+      />
 
       <!-- Описание -->
-      <div>
-        <label for="task_description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Описание
-        </label>
-        <textarea
-          id="task_description"
-          v-model="form.description"
-          rows="3"
-          class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          :class="{ 'border-red-500': errors.description }"
-        />
-        <p v-if="errors.description" class="mt-1 text-sm text-red-600">{{ errors.description[0] }}</p>
-      </div>
+      <TextAreaInput
+        id="task_description"
+        v-model="form.description"
+        label="Описание"
+        :rows="3"
+        :error="errors.description?.[0]"
+      />
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Проект -->
-        <div>
-          <label for="task_project" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Проект
-          </label>
-          <select
-            id="task_project"
-            v-model="form.project_id"
-            class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            :class="{ 'border-red-500': errors.project_id }"
-          >
-            <option value="">Выберите проект</option>
-            <option v-for="project in projects" :key="project.id" :value="project.id">
-              {{ project.name }}
-            </option>
-          </select>
-          <p v-if="errors.project_id" class="mt-1 text-sm text-red-600">{{ errors.project_id[0] }}</p>
-        </div>
+        <FormSelect
+          id="task_project"
+          v-model="form.project_id"
+          label="Проект"
+          :options="projects"
+          placeholder="Выберите проект"
+          :error="errors.project_id?.[0]"
+        />
 
         <!-- Статус -->
-        <div>
-          <label for="task_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Статус <span class="text-red-500">*</span>
-          </label>
-          <select
-            id="task_status"
-            v-model="form.status_id"
-            required
-            class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            :class="{ 'border-red-500': errors.status_id }"
-          >
-            <option v-for="status in statuses" :key="status.id" :value="status.id">
-              {{ status.name }}
-            </option>
-          </select>
-          <p v-if="errors.status_id" class="mt-1 text-sm text-red-600">{{ errors.status_id[0] }}</p>
-        </div>
+        <FormSelect
+          id="task_status"
+          v-model="form.status_id"
+          label="Статус"
+          :options="statuses"
+          required
+          :error="errors.status_id?.[0]"
+        />
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Приоритет -->
-        <div>
-          <label for="task_priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Приоритет <span class="text-red-500">*</span>
-          </label>
-          <select
-            id="task_priority"
-            v-model="form.priority"
-            required
-            class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            :class="{ 'border-red-500': errors.priority }"
-          >
-            <option value="low">Низкий</option>
-            <option value="normal">Обычный</option>
-            <option value="high">Высокий</option>
-            <option value="urgent">Срочный</option>
-          </select>
-          <p v-if="errors.priority" class="mt-1 text-sm text-red-600">{{ errors.priority[0] }}</p>
-        </div>
+        <FormSelect
+          id="task_priority"
+          v-model="form.priority"
+          label="Приоритет"
+          :options="PRIORITY_OPTIONS"
+          option-value="value"
+          option-label="label"
+          required
+          :error="errors.priority?.[0]"
+        />
 
         <!-- Размер -->
-        <div>
-          <label for="task_size" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Размер
-          </label>
-          <select
-            id="task_size"
-            v-model="form.size_id"
-            class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            :class="{ 'border-red-500': errors.size_id }"
-          >
-            <option value="">Автоопределение</option>
-            <option v-for="size in sizes" :key="size.id" :value="size.id">
-              {{ size.code }} - {{ size.name }}
-            </option>
-          </select>
-          <p v-if="errors.size_id" class="mt-1 text-sm text-red-600">{{ errors.size_id[0] }}</p>
-        </div>
+        <FormSelect
+          id="task_size"
+          v-model="form.size_id"
+          label="Размер"
+          :options="sizes"
+          placeholder="Автоопределение"
+          :error="errors.size_id?.[0]"
+        >
+          <template #option="{ option }">
+            {{ option.code }} - {{ option.name }}
+          </template>
+        </FormSelect>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Оценка времени -->
-        <div>
-          <label for="task_hours" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Оценка времени (часы)
-          </label>
-          <input
-            id="task_hours"
-            v-model="form.estimated_hours"
-            type="number"
-            step="0.25"
-            min="0.25"
-            max="1000"
-            placeholder="0.25"
-            class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            :class="{ 'border-red-500': errors.estimated_hours }"
-          />
-          <p v-if="errors.estimated_hours" class="mt-1 text-sm text-red-600">{{ errors.estimated_hours[0] }}</p>
-        </div>
+        <TextInput
+          id="task_hours"
+          v-model="form.estimated_hours"
+          label="Оценка времени (часы)"
+          type="number"
+          placeholder="0.25"
+          :error="errors.estimated_hours?.[0]"
+        />
 
         <!-- Дата завершения -->
-        <div>
-          <label for="task_due_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Срок выполнения
-          </label>
-          <input
-            id="task_due_date"
-            v-model="form.d_end"
-            type="datetime-local"
-            class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            :class="{ 'border-red-500': errors.d_end }"
-          />
-          <p v-if="errors.d_end" class="mt-1 text-sm text-red-600">{{ errors.d_end[0] }}</p>
-        </div>
+        <TextInput
+          id="task_due_date"
+          v-model="form.d_end"
+          label="Срок выполнения"
+          type="datetime-local"
+          :error="errors.d_end?.[0]"
+        />
       </div>
 
       <!-- Исполнители -->
-      <div>
-        <label for="task_assignees" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Исполнители
-        </label>
-        <select
-          id="task_assignees"
-          v-model="form.assignees"
-          multiple
-          class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          :class="{ 'border-red-500': errors.assignees }"
-        >
-          <option v-for="user in users" :key="user.id" :value="user.id">
-            {{ user.name }}
-          </option>
-        </select>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Удерживайте Ctrl (Cmd) для выбора нескольких исполнителей
-        </p>
-        <p v-if="errors.assignees" class="mt-1 text-sm text-red-600">{{ errors.assignees[0] }}</p>
-      </div>
+      <MultiSelect
+        id="task_assignees"
+        v-model="form.assignees"
+        label="Исполнители"
+        :options="users"
+        :error="errors.assignees?.[0]"
+      />
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Удерживайте Ctrl (Cmd) для выбора нескольких исполнителей
+      </p>
     </form>
   </Modal>
 </template>
@@ -195,6 +123,13 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import Modal from './Modal.vue'
+import LoadingSpinner from './shared/LoadingSpinner.vue'
+import TextInput from './shared/TextInput.vue'
+import TextAreaInput from './shared/TextAreaInput.vue'
+import FormSelect from './shared/FormSelect.vue'
+import MultiSelect from './shared/MultiSelect.vue'
+import TaskFormSkeleton from './shared/TaskFormSkeleton.vue'
+import { PRIORITY_OPTIONS } from '@/utils/constants.js'
 
 const props = defineProps({
   isOpen: {

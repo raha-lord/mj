@@ -4,24 +4,15 @@
       {{ label }}
       <span v-if="required" class="text-red-500">*</span>
     </label>
-    <select
+    <textarea
       :id="id"
       :value="modelValue"
       @input="$emit('update:modelValue', $event.target.value)"
-      :class="selectClasses"
+      :placeholder="placeholder"
+      :rows="rows"
+      :class="inputClasses"
       :required="required"
-    >
-      <option v-if="placeholder" value="">{{ placeholder }}</option>
-      <option 
-        v-for="option in options" 
-        :key="getOptionValue(option)" 
-        :value="getOptionValue(option)"
-      >
-        <slot name="option" :option="option">
-          {{ getOptionLabel(option) }}
-        </slot>
-      </option>
-    </select>
+    />
     <p v-if="error" class="mt-1 text-sm text-red-600">{{ error }}</p>
   </div>
 </template>
@@ -32,36 +23,20 @@ import { computed } from 'vue'
 const props = defineProps({
   id: String,
   label: String,
-  modelValue: [String, Number],
-  options: {
-    type: Array,
-    required: true
-  },
-  optionValue: {
-    type: String,
-    default: 'id'
-  },
-  optionLabel: {
-    type: String,
-    default: 'name'
-  },
+  modelValue: String,
   placeholder: String,
+  rows: {
+    type: Number,
+    default: 3
+  },
   required: Boolean,
   error: String
 })
 
 defineEmits(['update:modelValue'])
 
-const selectClasses = computed(() => {
+const inputClasses = computed(() => {
   const base = 'mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500'
   return props.error ? `${base} border-red-500` : base
 })
-
-const getOptionValue = (option) => {
-  return option[props.optionValue]
-}
-
-const getOptionLabel = (option) => {
-  return option[props.optionLabel]
-}
 </script>

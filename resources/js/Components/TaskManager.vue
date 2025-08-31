@@ -26,111 +26,196 @@
       <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
         Задачи
       </h2>
-      <button
-        @click="taskModal.openCreateModal"
-        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center"
+      <Button
+        @click="taskModal.openCreateModal()"
+        variant="primary"
+        size="md"
       >
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
+        <template #icon>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
+        </template>
         Создать задачу
-      </button>
+      </Button>
     </div>
 
-    <!-- Фильтры -->
+    <!-- Ant Design Фильтры -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
       <div class="p-6">
-        <form @submit.prevent="tasksList.applyFilters" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            
-            <!-- Поиск -->
-            <div>
-              <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Поиск
-              </label>
-              <input
-                id="search"
-                v-model="tasksList.filters.search"
-                type="text"
-                placeholder="Поиск задач..."
-                class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                @input="debouncedFilter"
-              />
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-            <!-- Статус -->
-            <div>
-              <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Статус
-              </label>
-              <select
-                id="status"
-                v-model="tasksList.filters.status"
-                class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                @change="tasksList.applyFilters"
-              >
-                <option value="">Все статусы</option>
-                <option v-for="status in statuses" :key="status.slug" :value="status.slug">
-                  {{ status.name }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Приоритет -->
-            <div>
-              <label for="priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Приоритет
-              </label>
-              <select
-                id="priority"
-                v-model="tasksList.filters.priority"
-                class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                @change="tasksList.applyFilters"
-              >
-                <option value="">Все приоритеты</option>
-                <option v-for="priority in PRIORITY_OPTIONS" :key="priority.value" :value="priority.value">
-                  {{ priority.label }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Кнопки -->
-            <div class="flex items-end space-x-2">
-              <button
-                type="submit"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors duration-200"
-              >
-                Фильтр
-              </button>
-              <button
-                type="button"
-                @click="tasksList.clearFilters"
-                class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition-colors duration-200"
-              >
-                Очистить
-              </button>
-            </div>
+          <!-- Поиск -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Поиск
+            </label>
+            <a-input
+              v-model:value="tasksList.filters.search"
+              placeholder="Поиск задач..."
+              allow-clear
+              @change="debouncedFilter"
+            >
+              <template #prefix>
+                <SearchOutlined />
+              </template>
+            </a-input>
           </div>
-        </form>
+
+          <!-- Статус -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Статус
+            </label>
+            <a-select
+              v-model:value="tasksList.filters.status"
+              placeholder="Все статусы"
+              allow-clear
+              style="width: 100%"
+              @change="tasksList.applyFilters"
+            >
+              <a-select-option
+                v-for="status in statuses"
+                :key="status.slug"
+                :value="status.slug"
+              >
+                {{ status.name }}
+              </a-select-option>
+            </a-select>
+          </div>
+
+          <!-- Приоритет -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Приоритет
+            </label>
+            <a-select
+              v-model:value="tasksList.filters.priority"
+              placeholder="Все приоритеты"
+              allow-clear
+              style="width: 100%"
+              @change="tasksList.applyFilters"
+            >
+              <a-select-option
+                v-for="priority in PRIORITY_OPTIONS"
+                :key="priority.value"
+                :value="priority.value"
+              >
+                {{ priority.label }}
+              </a-select-option>
+            </a-select>
+          </div>
+
+          <!-- Кнопки -->
+          <div class="flex items-end space-x-2">
+            <a-button
+              type="primary"
+              @click="tasksList.applyFilters"
+            >
+              Фильтр
+            </a-button>
+            <a-button
+              @click="tasksList.clearFilters"
+            >
+              Очистить
+            </a-button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Таблица задач -->
+    <!-- Ant Design Table -->
     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-      <!-- Индикатор загрузки -->
-      <div v-if="tasksList.loading.value" class="flex justify-center items-center py-12">
-        <LoadingSpinner size="md" :show-text="true" text="Загрузка задач..." />
-      </div>
-      
-      <!-- Vue компоненты вместо HTML -->
-      <TasksTable
-        v-else
-        :tasks="tasksList.tasks.value"
+      <a-table
+        :columns="tableColumns"
+        :data-source="tasksList.tasks.value"
         :loading="tasksList.loading.value"
-        @view="taskModal.openViewModal"
-        @edit="taskModal.openEditModal"
-        @delete="handleDeleteTask"
-      />
+        :pagination="{
+          current: tasksList.filters.page,
+          pageSize: tasksList.filters.per_page,
+          total: tasksList.pagination.value?.total || 0,
+          showSizeChanger: true,
+          pageSizeOptions: ['10', '25', '50', '100'],
+          showTotal: (total, range) => `${range[0]}-${range[1]} из ${total} задач`,
+          onChange: tasksList.changePage,
+          onShowSizeChange: tasksList.changePerPage
+        }"
+        row-key="id"
+        size="middle"
+      >
+        <!-- Кастомная колонка для задачи -->
+        <template #bodyCell="{ column, record, text }">
+          <template v-if="column.key === 'task'">
+            <div>
+              <div class="font-medium text-gray-900 dark:text-white">{{ record.name }}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400" v-if="record.description">
+                {{ record.description.substring(0, 100) }}{{ record.description.length > 100 ? '...' : '' }}
+              </div>
+            </div>
+          </template>
+
+          <template v-else-if="column.key === 'project'">
+            <span class="text-sm">{{ record.project?.name || '—' }}</span>
+          </template>
+
+          <template v-else-if="column.key === 'status'">
+            <a-tag :color="getStatusColor(record.status?.slug)">
+              {{ record.status?.name || '—' }}
+            </a-tag>
+          </template>
+
+          <template v-else-if="column.key === 'priority'">
+            <a-tag :color="getPriorityColor(record.priority)">
+              {{ getPriorityLabel(record.priority) }}
+            </a-tag>
+          </template>
+
+          <template v-else-if="column.key === 'size'">
+            <span class="text-sm">{{ record.size?.code || '—' }}</span>
+          </template>
+
+          <template v-else-if="column.key === 'actions'">
+            <a-space>
+              <a-button
+                type="link"
+                size="small"
+                @click="taskModal.openViewModal(record.id)"
+              >
+                Просмотр
+              </a-button>
+              <a-button
+                type="link"
+                size="small"
+                @click="taskModal.openEditModal(record.id)"
+              >
+                Редактировать
+              </a-button>
+              <a-button
+                type="link"
+                size="small"
+                danger
+                @click="handleDeleteTask(record.id)"
+              >
+                Удалить
+              </a-button>
+            </a-space>
+          </template>
+        </template>
+      </a-table>
+    </div>
+
+    <!-- Скелетон подготовки модалки -->
+    <div v-if="taskModal.preparing.value" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl transform transition-all max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Загрузка данных задачи...</h3>
+        </div>
+        <!-- Content -->
+        <div class="px-6 py-4">
+          <TaskFormSkeleton />
+        </div>
+      </div>
     </div>
 
     <!-- Модальное окно задачи -->
@@ -159,6 +244,17 @@ import { useNotifications } from '@/composables/ui/useNotifications.js'
 import TaskModal from './TaskModal.vue'
 import TasksTable from './tasks/TasksTable.vue'
 import LoadingSpinner from './shared/LoadingSpinner.vue'
+import Button from './shared/Button.vue'
+import FormSelect from './shared/FormSelect.vue'
+import SearchInput from './shared/SearchInput.vue'
+import TasksTableSkeleton from './shared/TasksTableSkeleton.vue'
+import TaskFormSkeleton from './shared/TaskFormSkeleton.vue'
+import { SearchOutlined } from '@ant-design/icons-vue'
+
+// Регистрируем компоненты
+const components = {
+  SearchOutlined
+}
 
 const props = defineProps({
   initialData: {
@@ -181,6 +277,76 @@ const users = ref(props.initialData.users || [])
 // UI helpers
 const getNotificationClasses = (type) => {
   return `border rounded-lg ${NOTIFICATION_CLASSES[type] || NOTIFICATION_CLASSES.success}`
+}
+
+// Колонки таблицы
+const tableColumns = [
+  {
+    title: 'Задача',
+    key: 'task',
+    dataIndex: 'name',
+    width: '40%'
+  },
+  {
+    title: 'Проект',
+    key: 'project',
+    dataIndex: ['project', 'name'],
+    width: '15%'
+  },
+  {
+    title: 'Статус',
+    key: 'status',
+    dataIndex: ['status', 'name'],
+    width: '12%'
+  },
+  {
+    title: 'Приоритет',
+    key: 'priority',
+    dataIndex: 'priority',
+    width: '12%'
+  },
+  {
+    title: 'Размер',
+    key: 'size',
+    dataIndex: ['size', 'code'],
+    width: '10%'
+  },
+  {
+    title: 'Действия',
+    key: 'actions',
+    width: '11%'
+  }
+]
+
+// Helper функции для цветов
+const getStatusColor = (status) => {
+  const colors = {
+    'new': 'blue',
+    'in-progress': 'orange',
+    'completed': 'green',
+    'cancelled': 'red'
+  }
+  return colors[status] || 'default'
+}
+
+const getPriorityColor = (priority) => {
+  const colors = {
+    'low': 'green',
+    'normal': 'blue',
+    'high': 'orange',
+    'urgent': 'red'
+  }
+  return colors[priority] || 'default'
+}
+
+const getPriorityLabel = (priority) => {
+  const labels = {
+    'low': 'Низкий',
+    'normal': 'Обычный',
+    'high': 'Высокий',
+    'urgent': 'Срочный'
+  }
+  return labels[priority] || priority
 }
 
 // Debounced filter

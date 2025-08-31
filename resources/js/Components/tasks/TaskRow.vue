@@ -1,5 +1,5 @@
 <template>
-  <tr 
+  <tr
     class="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors duration-200"
     @click="handleRowClick"
   >
@@ -24,7 +24,7 @@
 
     <!-- Статус -->
     <td class="px-6 py-4">
-      <span 
+      <span
         v-if="task.status"
         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
         :style="getStatusStyle(task.status)"
@@ -36,7 +36,7 @@
 
     <!-- Приоритет -->
     <td class="px-6 py-4">
-      <span 
+      <span
         v-if="task.priority"
         :class="getPriorityClass(task.priority)"
         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -48,7 +48,7 @@
 
     <!-- Размер -->
     <td class="px-6 py-4">
-      <span 
+      <span
         v-if="task.size"
         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
       >

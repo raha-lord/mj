@@ -1,35 +1,22 @@
 <template>
   <form @submit.prevent="handleSubmit" class="space-y-6">
     <!-- Название задачи -->
-    <div>
-      <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        Название задачи <span class="text-red-500">*</span>
-      </label>
-      <input
-        id="name"
-        v-model="form.name"
-        type="text"
-        required
-        class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-        :class="{ 'border-red-500': errors.name }"
-      />
-      <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name[0] }}</p>
-    </div>
+    <TextInput
+      id="name"
+      v-model="form.name"
+      label="Название задачи"
+      required
+      :error="errors.name?.[0]"
+    />
 
     <!-- Описание -->
-    <div>
-      <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        Описание
-      </label>
-      <textarea
-        id="description"
-        v-model="form.description"
-        rows="4"
-        class="mt-1 block w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-        :class="{ 'border-red-500': errors.description }"
-      />
-      <p v-if="errors.description" class="mt-1 text-sm text-red-600">{{ errors.description[0] }}</p>
-    </div>
+    <TextAreaInput
+      id="description"
+      v-model="form.description"
+      label="Описание"
+      :rows="4"
+      :error="errors.description?.[0]"
+    />
 
     <!-- Селекты -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -104,6 +91,8 @@
 import { reactive, computed, watch } from 'vue'
 import Button from '../shared/Button.vue'
 import FormSelect from '../shared/FormSelect.vue'
+import TextInput from '../shared/TextInput.vue'
+import TextAreaInput from '../shared/TextAreaInput.vue'
 import { PRIORITY_OPTIONS } from '@/utils/constants.js'
 
 const props = defineProps({
