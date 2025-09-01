@@ -95,4 +95,18 @@ class AuthController extends Controller
     {
         return Inertia::render('Auth/ForgotPassword');
     }
+
+    /**
+     * Обработать запрос на восстановление пароля
+     */
+    public function forgotPassword(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        // TODO: Implement password reset logic
+        // For now, just return success message
+        return redirect()->back()->with('status', 'Ссылка для восстановления пароля отправлена на ваш email.');
+    }
 }

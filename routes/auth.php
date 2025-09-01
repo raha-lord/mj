@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -17,6 +18,9 @@ Route::middleware('guest')->group(function () {
 
     Route::get('forgot-password', [AuthController::class, 'showForgotPassword'])
         ->name('password.request');
+    
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword'])
+        ->name('password.email');
 });
 
 Route::middleware('auth')->group(function () {
@@ -26,4 +30,20 @@ Route::middleware('auth')->group(function () {
     Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
+
+    // Profile routes
+    Route::get('profile', [ProfileController::class, 'show'])
+        ->name('profile.show');
+    
+    Route::get('profile/edit', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+    
+    Route::patch('profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+    
+    Route::put('profile/password', [ProfileController::class, 'updatePassword'])
+        ->name('profile.password');
+    
+    Route::delete('profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
 });

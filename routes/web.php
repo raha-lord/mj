@@ -22,9 +22,7 @@ Route::get('dashboard', [App\Http\Controllers\HomeController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
+// Profile route handled by auth.php
 
 require __DIR__.'/auth.php';
 
