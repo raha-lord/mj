@@ -17,6 +17,7 @@ class Status extends Model
         'name',
         'description',
         'color',
+        'type',
         'sort_order',
         'is_final'
     ];

@@ -144,6 +144,16 @@
       @close="closeModal"
       @submit="handleModalSubmit"
     />
+
+    <!-- Delete Confirmation Modal -->
+    <DeleteConfirmModal
+      :is-open="deleteModalState.isOpen"
+      :item-name="`задачу &quot;${deleteModalState.task?.name}&quot;`"
+      :loading="deleteModalState.loading"
+      description="Все связанные данные также будут удалены. Это действие нельзя отменить."
+      @cancel="handleDeleteCancel"
+      @confirm="handleDeleteConfirm"
+    />
   </AppLayout>
 </template>
 
@@ -152,6 +162,7 @@ import { ref, computed, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AppLayout from '../../Layouts/AppLayout.vue'
 import TaskModal from '../../Components/TaskModal.vue'
+import DeleteConfirmModal from '../../Components/DeleteConfirmModal.vue'
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons-vue'
 
 // Props from controller
@@ -346,7 +357,47 @@ const handleModalSubmit = (data) => {
 }
 
 const deleteTask = (id) => {
-  // TODO: Показать подтверждение удаления
-  console.log('Delete task', id)
+  const task = props.tasks.find(t => t.id === id)
+  if (task) {
+    deleteModalState.value = {
+      isOpen: true,
+      task: task,
+      loading: false
+    }
+  }
+}
+
+const deleteModalState = ref({
+  isOpen: false,
+  task: null,
+  loading: false
+})
+
+const handleDeleteConfirm = () => {
+  if (!deleteModalState.value.task) return
+  
+  deleteModalState.value.loading = true
+  
+  router.delete(`/tasks/${deleteModalState.value.task.id}`, {
+    onSuccess: () => {
+      deleteModalState.value = {
+        isOpen: false,
+        task: null,
+        loading: false
+      }
+      router.reload({ only: ['tasks'] })
+    },
+    onError: () => {
+      deleteModalState.value.loading = false
+    }
+  })
+}
+
+const handleDeleteCancel = () => {
+  deleteModalState.value = {
+    isOpen: false,
+    task: null,
+    loading: false
+  }
 }
 </script>

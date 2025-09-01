@@ -16,7 +16,8 @@ class Project extends Model
     protected $fillable = [
         'name',
         'slug',
-        'description'
+        'description',
+        'status'
     ];
 
     public function tasks(): HasMany
