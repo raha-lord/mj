@@ -12,6 +12,7 @@ use App\Services\TaskAssignmentService;
 use App\Services\TaskService;
 use App\Services\TimeLogService;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TaskController extends Controller
 {
@@ -31,12 +32,18 @@ class TaskController extends Controller
         $tasks = $this->taskService->getFilteredTasks($request, 25);
         $filterData = $this->taskService->getFilterData();
 
-        // Если это AJAX запрос, возвращаем только HTML таблицы
-        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-            return view('tasks.partials.table', compact('tasks'))->render();
-        }
-
-        return view('tasks.index', array_merge(compact('tasks'), $filterData));
+        return Inertia::render('Tasks/Index', [
+            'tasks' => $tasks->items(),
+            'pagination' => [
+                'current_page' => $tasks->currentPage(),
+                'per_page' => $tasks->perPage(), 
+                'total' => $tasks->total(),
+                'last_page' => $tasks->lastPage()
+            ],
+            'statuses' => $filterData['statuses'],
+            'projects' => $filterData['projects'],
+            'users' => $filterData['users'],
+        ]);
     }
 
     public function indexVue(Request $request)

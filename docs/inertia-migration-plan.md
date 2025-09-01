@@ -278,9 +278,58 @@ php artisan inertia:middleware  ✅
 - ✅ Роуты зарегистрированы корректно  
 - 🔄 HTTP доступ (502 ошибка - требует настройки nginx/auth)
 
+### 3.4 Обновление контроллеров ✅ ЧАСТИЧНО
+- ✅ **HomeController** → Dashboard страница готова
+- ✅ **TaskController** → index() метод для Inertia
+- ✅ **AuthController** → создан для замены Livewire
+
 ---
 
-## Этап 3: Миграция backend
+## Этап 4: Миграция критически важных страниц ✅ ВЫПОЛНЕНО
+
+### 4.1 AuthLayout.vue ✅ ВЫПОЛНЕНО
+- ✅ Простой layout для страниц авторизации
+- ✅ Центрированные формы с Ant Design Card
+- ✅ Интеграция ThemeSelector
+- ✅ Flash messages отображение
+- ✅ GlobalErrorHandler интеграция
+
+### 4.2 Auth/Login.vue ✅ ВЫПОЛНЕНО
+**🎯 ИСПОЛЬЗОВАТЬ ANT DESIGN ФОРМЫ: `<a-form>`, `<a-input>`, `<a-button>`**
+
+- ✅ Форма входа в систему → `<a-form>`
+- ✅ Валидация логина/пароля → `<a-form-item>` с правилами
+- ✅ Запомнить меня → `<a-checkbox>`
+- ✅ Ссылки на регистрацию и восстановление → `<a-button type="link">`
+- ✅ Интеграция useFormErrors для отображения ошибок
+- ✅ Обработка Inertia form submission
+
+### 4.3 Auth роуты ✅ ВЫПОЛНЕНО
+- ✅ Создан AuthController для замены Livewire Volt
+- ✅ Настроены роуты: GET /login, POST /login, POST /logout
+- ✅ Middleware guest/auth настроены корректно
+
+### 4.4 Tasks/Index.vue ✅ ВЫПОЛНЕНО
+**🎯 СОБЛЮДАТЬ ВСЕ ПРАВИЛА из development-checklist.md**
+
+- ✅ Перенесен функционал из legacy TaskManager.vue
+- ✅ Получает данные через props вместо window
+- ✅ Использует AppLayout
+- ✅ Сохранен весь функционал (таблица, фильтры)
+- ✅ Ant Design компоненты: `<a-table>`, `<a-card>`, `<a-select>`
+- ✅ Инерция навигация и фильтрация
+
+### 4.5 TaskController обновление ✅ ВЫПОЛНЕНО
+- ✅ index() метод использует Inertia::render()
+- ✅ Возвращает структурированные данные для Vue
+- ✅ Поддержка пагинации и фильтрации
+- ✅ Интеграция с существующим TaskService
+
+### 4.6 Сборка и тестирование ✅ ВЫПОЛНЕНО
+- ✅ Vite успешно генерирует все страницы
+- ✅ Code splitting работает (Login.js, Dashboard.js, Tasks/Index.js)
+- ✅ Ant Design стили подключены
+- ✅ Система тем интегрирована
 
 ### 3.1 Создание базового Blade template
 - `resources/views/app.blade.php` - единственный Blade файл
