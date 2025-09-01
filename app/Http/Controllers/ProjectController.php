@@ -3,122 +3,91 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-
 use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Redirector;
-use Illuminate\View\View;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ProjectController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return View
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-        $keyword = $request->get('search');
-        $perPage = 25;
+        $search = $request->get('search');
+        $status = $request->get('status');
+        $perPage = $request->get('per_page', 25);
 
-        if (!empty($keyword)) {
-            $project = Project::where('slug', 'LIKE', "%$keyword%")
-                ->orWhere('name', 'LIKE', "%$keyword%")
-                ->orWhere('description', 'LIKE', "%$keyword%")
-                ->latest()->paginate($perPage);
-        } else {
-            $project = Project::latest()->paginate($perPage);
+        $query = Project::withCount('tasks');
+
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%$search%")
+                  ->orWhere('description', 'LIKE', "%$search%");
+            });
         }
 
-        return view('projects.index', compact('project'));
-    }
+        if (!empty($status)) {
+            $query->where('status', $status);
+        }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return View
-     */
-    public function create()
-    {
-        return view('projects.create');
+        $projects = $query->latest()->paginate($perPage);
+
+        return Inertia::render('Projects/Index', [
+            'projects' => $projects->items(),
+            'pagination' => [
+                'current_page' => $projects->currentPage(),
+                'per_page' => $projects->perPage(),
+                'total' => $projects->total(),
+            ]
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param Request $request
-     *
-     * @return RedirectResponse|Redirector
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'status' => ['required', 'in:active,inactive,completed']
+        ]);
 
-        $requestData = $request->all();
+        Project::create($validated);
 
-        Project::create($requestData);
-
-        return redirect('projects')->with('flash_message', 'Project added!');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param int $id
-     *
-     * @return View
-     */
-    public function show($id)
-    {
-        $project = Project::findOrFail($id);
-
-        return view('projects.show', compact('project'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param int $id
-     *
-     * @return View
-     */
-    public function edit($id)
-    {
-        $project = Project::findOrFail($id);
-
-        return view('projects.edit', compact('project'));
+        return redirect()->route('projects.index')
+            ->with('success', 'Проект успешно создан!');
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param Request $request
-     * @param int $id
-     *
-     * @return RedirectResponse|Redirector
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Project $project): RedirectResponse
     {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'status' => ['required', 'in:active,inactive,completed']
+        ]);
 
-        $requestData = $request->all();
+        $project->update($validated);
 
-        $project = Project::findOrFail($id);
-        $project->update($requestData);
-
-        return redirect('projects')->with('flash_message', 'Project updated!');
+        return redirect()->route('projects.index')
+            ->with('success', 'Проект успешно обновлен!');
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param int $id
-     *
-     * @return RedirectResponse|Redirector
      */
-    public function destroy($id)
+    public function destroy(Project $project): RedirectResponse
     {
-        Project::destroy($id);
+        $project->delete();
 
-        return redirect('projects')->with('flash_message', 'Project deleted!');
+        return redirect()->route('projects.index')
+            ->with('success', 'Проект успешно удален!');
     }
 }

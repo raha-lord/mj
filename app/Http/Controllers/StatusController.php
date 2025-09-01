@@ -3,122 +3,95 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-
 use App\Models\Status;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Redirector;
-use Illuminate\View\View;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class StatusController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return View
      */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-        $keyword = $request->get('search');
-        $perPage = 25;
+        $search = $request->get('search');
+        $type = $request->get('type');
+        $perPage = $request->get('per_page', 25);
 
-        if (!empty($keyword)) {
-            $status = Status::where('slug', 'LIKE', "%$keyword%")
-                ->orWhere('name', 'LIKE', "%$keyword%")
-                ->orWhere('description', 'LIKE', "%$keyword%")
-                ->latest()->paginate($perPage);
-        } else {
-            $status = Status::latest()->paginate($perPage);
+        $query = Status::withCount('tasks');
+
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%$search%")
+                  ->orWhere('slug', 'LIKE', "%$search%");
+            });
         }
 
-        return view('statuses.index', compact('status'));
-    }
+        if (!empty($type)) {
+            $query->where('type', $type);
+        }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return View
-     */
-    public function create()
-    {
-        return view('statuses.create');
+        $statuses = $query->latest()->paginate($perPage);
+
+        return Inertia::render('Statuses/Index', [
+            'statuses' => $statuses->items(),
+            'pagination' => [
+                'current_page' => $statuses->currentPage(),
+                'per_page' => $statuses->perPage(),
+                'total' => $statuses->total(),
+            ]
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param Request $request
-     *
-     * @return RedirectResponse|Redirector
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'unique:statuses'],
+            'type' => ['required', 'in:task,project'],
+            'color' => ['nullable', 'string', 'max:50'],
+            'is_final' => ['boolean']
+        ]);
 
-        $requestData = $request->all();
+        Status::create($validated);
 
-        Status::create($requestData);
-
-        return redirect('statuses')->with('flash_message', 'Status added!');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param int $id
-     *
-     * @return View
-     */
-    public function show($id)
-    {
-        $statuscode = Status::findOrFail($id);
-
-        return view('statuses.show', compact('statuscode'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param int $id
-     *
-     * @return View
-     */
-    public function edit($id)
-    {
-        $statuscode = Status::findOrFail($id);
-
-        return view('statuses.edit', compact('statuscode'));
+        return redirect()->route('statuses.index')
+            ->with('success', 'Статус успешно создан!');
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param Request $request
-     * @param int $id
-     *
-     * @return RedirectResponse|Redirector
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Status $status): RedirectResponse
     {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', Rule::unique('statuses')->ignore($status->id)],
+            'type' => ['required', 'in:task,project'],
+            'color' => ['nullable', 'string', 'max:50'],
+            'is_final' => ['boolean']
+        ]);
 
-        $requestData = $request->all();
+        $status->update($validated);
 
-        $statuscode = Status::findOrFail($id);
-        $statuscode->update($requestData);
-
-        return redirect('statuses')->with('flash_message', 'Status updated!');
+        return redirect()->route('statuses.index')
+            ->with('success', 'Статус успешно обновлен!');
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param int $id
-     *
-     * @return RedirectResponse|Redirector
      */
-    public function destroy($id)
+    public function destroy(Status $status): RedirectResponse
     {
-        Status::destroy($id);
+        $status->delete();
 
-        return redirect('statuses')->with('flash_message', 'Status deleted!');
+        return redirect()->route('statuses.index')
+            ->with('success', 'Статус успешно удален!');
     }
 }
