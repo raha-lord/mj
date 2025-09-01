@@ -37,7 +37,26 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            //
+            
+            // Информация о приложении
+            'appName' => config('app.name'),
+            
+            // Аутентификация
+            'auth' => [
+                'user' => $request->user(),
+            ],
+            
+            // Flash сообщения
+            'flash' => [
+                'message' => fn () => $request->session()->get('message'),
+                'error' => fn () => $request->session()->get('error'),
+                'success' => fn () => $request->session()->get('success'),
+            ],
+            
+            // Ошибки валидации (для форм)
+            'errors' => fn () => $request->session()->get('errors')
+                ? $request->session()->get('errors')->getBag('default')->getMessages()
+                : [],
         ];
     }
 }
