@@ -131,6 +131,19 @@
         </a-card>
       </div>
     </div>
+    <!-- Task Modal -->
+    <TaskModal
+      :is-open="modalState.isOpen"
+      :mode="modalState.mode"
+      :task="modalState.task"
+      :loading="modalState.loading"
+      :projects="projects"
+      :statuses="statuses"
+      :sizes="[]"
+      :users="users"
+      @close="closeModal"
+      @submit="handleModalSubmit"
+    />
   </AppLayout>
 </template>
 
@@ -138,6 +151,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AppLayout from '../../Layouts/AppLayout.vue'
+import TaskModal from '../../Components/TaskModal.vue'
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons-vue'
 
 // Props from controller
@@ -174,6 +188,13 @@ const filters = ref({
   search: '',
   status: null,
   priority: null
+})
+
+const modalState = ref({
+  isOpen: false,
+  mode: 'create',
+  task: null,
+  loading: false
 })
 
 // Computed
@@ -278,16 +299,50 @@ const handleTableChange = (pagination) => {
 }
 
 const openCreateModal = () => {
-  // TODO: Открыть модальное окно создания задачи
-  console.log('Open create modal')
+  modalState.value = {
+    isOpen: true,
+    mode: 'create',
+    task: null,
+    loading: false
+  }
 }
 
 const viewTask = (id) => {
-  router.visit(`/tasks/${id}`)
+  const task = props.tasks.find(t => t.id === id)
+  if (task) {
+    modalState.value = {
+      isOpen: true,
+      mode: 'view',
+      task: task,
+      loading: false
+    }
+  }
 }
 
 const editTask = (id) => {
-  router.visit(`/tasks/${id}/edit`)
+  const task = props.tasks.find(t => t.id === id)
+  if (task) {
+    modalState.value = {
+      isOpen: true,
+      mode: 'edit',
+      task: task,
+      loading: false
+    }
+  }
+}
+
+const closeModal = () => {
+  modalState.value = {
+    isOpen: false,
+    mode: 'create',
+    task: null,
+    loading: false
+  }
+}
+
+const handleModalSubmit = (data) => {
+  // Refresh page after successful submission
+  router.reload({ only: ['tasks'] })
 }
 
 const deleteTask = (id) => {
