@@ -14,8 +14,8 @@
       </div>
     </template>
 
-    <div class="py-12">
-      <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+    <div>
+      <div>
         <a-row :gutter="[24, 24]">
           <!-- Profile Info Card -->
           <a-col :xs="24" :lg="16">

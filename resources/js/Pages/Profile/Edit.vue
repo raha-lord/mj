@@ -14,8 +14,8 @@
       </div>
     </template>
 
-    <div class="py-12">
-      <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
+    <div>
+      <div>
         <!-- Profile Information Card -->
         <a-card title="Информация профиля" class="mb-6">
           <a-form

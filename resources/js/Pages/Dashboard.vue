@@ -6,8 +6,8 @@
       </h2>
     </template>
 
-    <div class="py-12">
-      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div>
+      <div>
         <!-- Welcome Card -->
         <a-card class="mb-6">
           <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">

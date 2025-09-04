@@ -14,8 +14,8 @@
       </div>
     </template>
 
-    <div class="py-12">
-      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div>
+      <div>
         <!-- Filters Card -->
         <a-card class="mb-6" title="Фильтры">
           <a-row :gutter="[16, 16]">
