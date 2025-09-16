@@ -9,6 +9,9 @@
     color: white !important;
 }
 
+
+
+
 .ant-btn-primary:hover,
 .ant-btn-primary:focus {
     background-color: #73d13d !important;
@@ -39,6 +42,22 @@
 .ant-pagination-options .ant-select .ant-select-selector {
     min-width: 80px !important;
 }
+
+/* === HEADER OVERRIDE === */
+.ant-layout-header {
+    background: #ffffff !important;
+    color: #333333 !important;
+}
+/* Меню при наведении */
+/*.ant-menu-item:hover {*/
+/*    background: rgba(82, 196, 26, 0.08) !important;*/
+/*    color: #52c41a !important;*/
+/*}*/
+
+/*.ant-menu-item-selected {*/
+/*    background: rgba(82, 196, 26, 0.12) !important;*/
+/*    color: #52c41a !important;*/
+/*}*/
 
 /* === ЗЕЛЕНАЯ ТЕМА ANT DESIGN - НЕ УДАЛЯТЬ === */
 html .ant-btn-primary {

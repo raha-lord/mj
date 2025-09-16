@@ -1,7 +1,7 @@
 <template>
   <a-layout style="min-height: 100vh">
     <!-- Header с навигацией -->
-    <a-layout-header class="bg-white dark:bg-gray-800 shadow">
+    <a-layout-header class="bg-white shadow">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex">
@@ -11,7 +11,6 @@
                 {{ appName }}
               </Link>
             </div>
-
             <!-- Navigation Links -->
             <NavigationMenu />
           </div>
