@@ -1,39 +1,32 @@
 <template>
   <div class="theme-selector">
-    <a-select 
-      v-model:value="currentTheme" 
-      @change="handleThemeChange"
-      :style="{ width: '140px' }"
+    <a-button 
+      @click="toggleTheme"
       size="small"
+      :icon="currentThemeData?.icon"
+      :title="`Переключить на ${currentTheme === 'light' ? 'темную' : 'светлую'} тему`"
+      class="theme-toggle-btn"
     >
-      <a-select-option 
-        v-for="theme in availableThemes" 
-        :key="theme.value" 
-        :value="theme.value"
-      >
-        <div class="flex items-center gap-2">
-          <div 
-            class="w-3 h-3 rounded-full border" 
-            :style="{ backgroundColor: theme.color }"
-          ></div>
-          {{ theme.label }}
-        </div>
-      </a-select-option>
-    </a-select>
+      {{ currentThemeData?.label }}
+    </a-button>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
-const currentTheme = ref('green')
+const currentTheme = ref('light')
 const availableThemes = ref([])
 
-const handleThemeChange = (themeName) => {
-  window.themeManager.setTheme(themeName)
+const currentThemeData = computed(() => {
+  return availableThemes.value.find(theme => theme.value === currentTheme.value)
+})
+
+const toggleTheme = () => {
+  const newTheme = window.themeManager.toggleTheme()
   
   // Эмитим событие для родительского компонента
-  emit('theme-changed', themeName)
+  emit('theme-changed', newTheme)
 }
 
 const emit = defineEmits(['theme-changed'])

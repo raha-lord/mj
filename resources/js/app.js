@@ -6,7 +6,7 @@ import Antd, { ConfigProvider } from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
 
 // Импорт системы тем
-import '../js-legacy/utils/themeManager.js'
+import './utils/themeManager.js'
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel'
 

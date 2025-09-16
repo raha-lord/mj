@@ -1,0 +1,207 @@
+/* Светлая тема для всего интерфейса */
+:root {
+  /* Основные цвета */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #fafafa;
+  --bg-elevated: #ffffff;
+  
+  /* Текст */
+  --text-primary: #000000d9;
+  --text-secondary: #00000073;
+  --text-disabled: #00000040;
+  --text-inverse: #ffffff;
+  
+  /* Границы */
+  --border-color: #d9d9d9;
+  --border-hover: #40a9ff;
+  --border-focus: #1890ff;
+  
+  /* Основной цвет (Ant Design Blue) */
+  --primary-color: #1890ff;
+  --primary-hover: #40a9ff;
+  --primary-active: #096dd9;
+  --primary-light: #e6f7ff;
+  --primary-lightest: #f0f9ff;
+  
+  /* Успех */
+  --success-color: #52c41a;
+  --success-hover: #73d13d;
+  --success-light: #f6ffed;
+  
+  /* Предупреждение */
+  --warning-color: #faad14;
+  --warning-hover: #ffc53d;
+  --warning-light: #fffbe6;
+  
+  /* Ошибка */
+  --error-color: #ff4d4f;
+  --error-hover: #ff7875;
+  --error-light: #fff2f0;
+  
+  /* Тени */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 12px 32px 4px rgba(0, 0, 0, 0.04), 0 8px 20px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* Основные элементы интерфейса */
+body {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Header */
+.ant-layout-header {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* Sidebar/Menu */
+.ant-layout-sider {
+  background: var(--bg-primary) !important;
+}
+
+.ant-menu {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.ant-menu-item {
+  color: var(--text-primary) !important;
+}
+
+.ant-menu-item:hover {
+  background: var(--primary-lightest) !important;
+  color: var(--primary-color) !important;
+}
+
+.ant-menu-item-selected {
+  background: var(--primary-light) !important;
+  color: var(--primary-color) !important;
+}
+
+/* Content area */
+.ant-layout-content {
+  background: var(--bg-secondary) !important;
+}
+
+/* Cards */
+.ant-card {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.ant-card-head {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* Tables */
+.ant-table {
+  background: var(--bg-primary) !important;
+}
+
+.ant-table-thead > tr > th {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.ant-table-tbody > tr > td {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: var(--primary-lightest) !important;
+}
+
+/* Forms */
+.ant-input {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.ant-input:hover {
+  border-color: var(--border-hover) !important;
+}
+
+.ant-input:focus,
+.ant-input-focused {
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+.ant-select .ant-select-selector {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-color: var(--border-hover) !important;
+}
+
+.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+/* Buttons */
+.ant-btn-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--text-inverse) !important;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  color: var(--text-inverse) !important;
+}
+
+/* Modals */
+.ant-modal-content {
+  background: var(--bg-primary) !important;
+}
+
+.ant-modal-header {
+  background: var(--bg-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.ant-modal-title {
+  color: var(--text-primary) !important;
+}
+
+.ant-modal-body {
+  color: var(--text-primary) !important;
+}
+
+/* Dropdowns */
+.ant-dropdown-menu {
+  background: var(--bg-elevated) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.ant-dropdown-menu-item {
+  color: var(--text-primary) !important;
+}
+
+.ant-dropdown-menu-item:hover {
+  background: var(--primary-lightest) !important;
+}
+
+/* Notifications */
+.ant-notification {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-lg) !important;
+}

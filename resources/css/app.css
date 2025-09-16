@@ -2,38 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Зеленая тема для Ant Design */
-.ant-btn-primary {
-    background-color: #52c41a !important;
-    border-color: #52c41a !important;
-    color: white !important;
-}
-
-
-
-
-.ant-btn-primary:hover,
-.ant-btn-primary:focus {
-    background-color: #73d13d !important;
-    border-color: #73d13d !important;
-    color: white !important;
-}
-
-.ant-input:focus,
-.ant-input-focused {
-    border-color: #73d13d !important;
-    box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2) !important;
-}
-
-.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
-    border-color: #73d13d !important;
-}
-
-.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
-    border-color: #73d13d !important;
-    box-shadow: 0 0 0 2px rgba(82, 196, 26, 0.2) !important;
-}
-
 /* Ant Design пагинация - ширина селектора количества записей */
 .ant-pagination-options .ant-select {
     min-width: 80px !important;
@@ -41,37 +9,6 @@
 
 .ant-pagination-options .ant-select .ant-select-selector {
     min-width: 80px !important;
-}
-
-/* === HEADER OVERRIDE === */
-.ant-layout-header {
-    background: #ffffff !important;
-    color: #333333 !important;
-}
-/* Меню при наведении */
-/*.ant-menu-item:hover {*/
-/*    background: rgba(82, 196, 26, 0.08) !important;*/
-/*    color: #52c41a !important;*/
-/*}*/
-
-/*.ant-menu-item-selected {*/
-/*    background: rgba(82, 196, 26, 0.12) !important;*/
-/*    color: #52c41a !important;*/
-/*}*/
-
-/* === ЗЕЛЕНАЯ ТЕМА ANT DESIGN - НЕ УДАЛЯТЬ === */
-html .ant-btn-primary {
-    background-color: #52c41a !important;
-    border-color: #52c41a !important;
-    color: white !important;
-}
-
-html .ant-btn-primary:hover,
-html .ant-btn-primary:focus,
-html .ant-btn-primary.ant-btn-primary-hovered {
-    background-color: #73d13d !important;
-    border-color: #73d13d !important;
-    color: white !important;
 }
 
 @layer components {
