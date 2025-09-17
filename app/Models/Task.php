@@ -371,4 +371,46 @@ class Task extends Model
         $timeLogService = app(TimeLogService::class);
         return $timeLogService->logTime($this, $hours, $description, $user);
     }
+
+    // Методы для работы с организациями
+    public function scopeForOrganization($query, $organizationId)
+    {
+        return $query->whereHas('project', function ($q) use ($organizationId) {
+            $q->where('organization_id', $organizationId);
+        });
+    }
+
+    public function scopeAccessibleBy($query, User $user)
+    {
+        if ($user->isSuperUser()) {
+            return $query;
+        }
+
+        return $query->whereHas('project', function ($q) use ($user) {
+            $q->whereHas('organization.users', function ($orgQ) use ($user) {
+                $orgQ->where('user_id', $user->id);
+            });
+        });
+    }
+
+    // Вспомогательные методы
+    public function getOrganizationId(): ?int
+    {
+        return $this->project?->organization_id;
+    }
+
+    public function belongsToOrganization($organizationId): bool
+    {
+        return $this->getOrganizationId() == $organizationId;
+    }
+
+    public function isAccessibleBy(User $user): bool
+    {
+        if ($user->isSuperUser()) {
+            return true;
+        }
+
+        $organizationId = $this->getOrganizationId();
+        return $organizationId && $user->belongsToOrganization($organizationId);
+    }
 }

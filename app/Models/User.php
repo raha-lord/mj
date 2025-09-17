@@ -24,6 +24,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_super_user',
+        'password_set_at',
     ];
 
     /**
@@ -50,6 +52,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_super_user' => 'boolean',
+            'password_set_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];
     }
@@ -173,9 +177,86 @@ class User extends Authenticatable
         ];
     }
 
+    // Отношения к организациям
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class, 'tasks_management.organization_user')
+            ->withPivot(['role', 'joined_at', 'notes'])
+            ->whereNull('tasks_management.organization_user.deleted_at')
+            ->withTimestamps();
+    }
+
+    public function ownedOrganizations(): BelongsToMany
+    {
+        return $this->organizations()->wherePivot('role', 'org_admin');
+    }
+
+    public function managedProjects(): BelongsToMany
+    {
+        return $this->organizations()->wherePivotIn('role', ['org_admin', 'project_manager']);
+    }
+
     // Scopes
     public function scopeActive($query)
     {
         return $query->whereNull('deleted_at');
+    }
+
+    public function scopeSuperUsers($query)
+    {
+        return $query->where('is_super_user', true);
+    }
+
+    public function scopeInOrganization($query, $organizationId)
+    {
+        return $query->whereHas('organizations', function ($q) use ($organizationId) {
+            $q->where('organization_id', $organizationId);
+        });
+    }
+
+    // Вспомогательные методы для организаций
+    public function isSuperUser(): bool
+    {
+        return $this->is_super_user;
+    }
+
+    public function hasPassword(): bool
+    {
+        return !empty($this->password_set_at);
+    }
+
+    public function belongsToOrganization($organizationId): bool
+    {
+        return $this->organizations()->where('organization_id', $organizationId)->exists();
+    }
+
+    public function getOrganizationRole($organizationId): ?string
+    {
+        $org = $this->organizations()->where('organization_id', $organizationId)->first();
+        return $org?->pivot?->role;
+    }
+
+    public function isOrgAdmin($organizationId): bool
+    {
+        return $this->getOrganizationRole($organizationId) === 'org_admin';
+    }
+
+    public function isProjectManager($organizationId): bool
+    {
+        return in_array($this->getOrganizationRole($organizationId), ['org_admin', 'project_manager']);
+    }
+
+    public function canAccessOrganization($organizationId): bool
+    {
+        return $this->isSuperUser() || $this->belongsToOrganization($organizationId);
+    }
+
+    public function getAccessibleOrganizations()
+    {
+        if ($this->isSuperUser()) {
+            return Organization::active()->get();
+        }
+        
+        return $this->organizations()->active()->get();
     }
 }
