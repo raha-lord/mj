@@ -125,7 +125,7 @@ body {
 .ant-input {
   background: var(--bg-primary) !important;
   color: var(--text-primary) !important;
-  border: 1px solid var(--border-color) !important;
+  border: 0px solid var(--border-color) !important;
 }
 
 .ant-input:hover {

@@ -130,29 +130,31 @@ export const sizeToHours = (size) => {
  * Получить CSS класс для статуса задачи
  */
 export const getStatusClass = (status) => {
-    const statusClasses = {
-        'новая': 'bg-blue-100 text-blue-800',
-        'в работе': 'bg-yellow-100 text-yellow-800',
-        'тестирование': 'bg-purple-100 text-purple-800',
-        'завершена': 'bg-green-100 text-green-800',
-        'отменена': 'bg-red-100 text-red-800'
+    if (!status?.slug) {
+        return 'status-new';
     }
-    
-    return statusClasses[status?.toLowerCase()] || 'bg-gray-100 text-gray-800'
+    return `status-${status.slug}`;
 }
 
 /**
  * Получить CSS класс для приоритета задачи
  */
 export const getPriorityClass = (priority) => {
-    const priorityClasses = {
-        'низкий': 'bg-green-100 text-green-800',
-        'средний': 'bg-yellow-100 text-yellow-800',
-        'высокий': 'bg-red-100 text-red-800',
-        'критический': 'bg-red-200 text-red-900 font-bold'
-    }
+    const priorityKey = priority?.toLowerCase() || 'normal';
+    const mapping = {
+        'низкий': 'priority-low',
+        'low': 'priority-low',
+        'обычный': 'priority-normal',
+        'средний': 'priority-normal',
+        'normal': 'priority-normal',
+        'высокий': 'priority-high',
+        'high': 'priority-high',
+        'критический': 'priority-urgent',
+        'срочный': 'priority-urgent',
+        'urgent': 'priority-urgent'
+    };
     
-    return priorityClasses[priority?.toLowerCase()] || 'bg-gray-100 text-gray-800'
+    return mapping[priorityKey] || 'priority-normal';
 }
 
 /**

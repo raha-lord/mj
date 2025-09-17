@@ -26,8 +26,8 @@
     <td class="px-6 py-4">
       <span
         v-if="task.status"
+        :class="getStatusClass(task.status)"
         class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-        :style="getStatusStyle(task.status)"
       >
         {{ task.status.name }}
       </span>
@@ -81,7 +81,7 @@
 
 <script setup>
 import Button from '../shared/Button.vue'
-import { truncateText, getPriorityClass } from '@/utils/helpers.js'
+import { truncateText, getPriorityClass, getStatusClass } from '@/utils/helpers.js'
 
 const props = defineProps({
   task: {
@@ -108,11 +108,5 @@ const handleEditClick = (event) => {
   emit('edit', props.task.id)
 }
 
-const getStatusStyle = (status) => {
-  if (!status?.color) return {}
-  return {
-    backgroundColor: `${status.color}20`,
-    color: status.color
-  }
-}
+
 </script>

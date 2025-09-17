@@ -64,8 +64,8 @@
               <div class="mt-1">
                 <span 
                   v-if="task.status"
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" 
-                  :style="`background-color: ${task.status.color}20; color: ${task.status.color};`"
+                  :class="getStatusClass(task.status)"
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                 >
                   {{ task.status.name }}
                 </span>
@@ -174,6 +174,7 @@
 <script setup>
 import { computed } from 'vue'
 import Modal from './Modal.vue'
+import { getStatusClass } from '@/utils/helpers.js'
 
 const props = defineProps({
   isOpen: {
