@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\SetPasswordController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,21 +19,27 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
 
+// Установка пароля (доступно без organization middleware)
+Route::middleware(['auth'])->group(function () {
+    Route::get('set-password', [SetPasswordController::class, 'show'])->name('set-password');
+    Route::post('set-password', [SetPasswordController::class, 'store'])->name('set-password.store');
+});
+
 Route::get('dashboard', [App\Http\Controllers\HomeController::class, 'index'])
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'organization:member'])
     ->name('dashboard');
 
 // Profile route handled by auth.php
 
 require __DIR__.'/auth.php';
 
-// Защищенные маршруты (требуют авторизации)
-Route::middleware(['auth'])->group(function () {
+// Защищенные маршруты (требуют членство в организации)
+Route::middleware(['auth', 'organization:member'])->group(function () {
 
-    // Основные CRUD ресурсы
-    Route::resource('statuses', StatusController::class);
-    Route::resource('projects', ProjectController::class);
-    Route::resource('tasks', TaskController::class);
+    // Основные CRUD ресурсы (просмотр доступен всем участникам)
+    Route::resource('statuses', StatusController::class)->only(['index', 'show']);
+    Route::resource('projects', ProjectController::class)->only(['index', 'show']);
+    Route::resource('tasks', TaskController::class)->only(['index', 'show']);
 
     // Vue версия страницы задач с Headless UI
     Route::get('tasks-vue', [TaskController::class, 'indexVue'])
@@ -44,7 +51,7 @@ Route::middleware(['auth'])->group(function () {
     // Тестовая страница для отладки модалок
     Route::view('test-modal', 'test-modal')->name('test-modal');
 
-    // Дополнительные web-маршруты для задач
+    // Дополнительные web-маршруты для задач (все участники)
     Route::prefix('tasks')->name('tasks.')->group(function () {
         // Действия, которые выполняются через формы (POST/PATCH запросы)
         Route::post('{task}/log-time', [TaskController::class, 'logTime'])
@@ -62,4 +69,10 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-Route::post('tasks/{task}/log-time', [TaskController::class, 'logTime'])->name('tasks.log-time');
+// Создание и редактирование (проект-менеджеры и админы)
+Route::middleware(['auth', 'organization:project_manager,org_admin'])->group(function () {
+    // CRUD операции создания и редактирования
+    Route::resource('statuses', StatusController::class)->except(['index', 'show']);
+    Route::resource('projects', ProjectController::class)->except(['index', 'show']);
+    Route::resource('tasks', TaskController::class)->except(['index', 'show']);
+});
