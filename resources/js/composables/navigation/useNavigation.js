@@ -1,5 +1,7 @@
 import { computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
+import { useUserPermissions } from '../organizations/useUserPermissions'
+import { useOrganizationContext } from '../organizations/useOrganizationContext'
 
 /**
  * Composable для управления навигационным меню
@@ -7,9 +9,17 @@ import { usePage } from '@inertiajs/vue3'
  */
 export function useNavigation() {
   const page = usePage()
+  const { 
+    canViewProjects, 
+    canViewTasks, 
+    canViewStatuses,
+    currentUser 
+  } = useUserPermissions()
   
-  // Базовая конфигурация меню
-  const menuItems = [
+  const { currentOrganization } = useOrganizationContext()
+  
+  // Базовая конфигурация меню с организационным контекстом
+  const menuItems = computed(() => [
     {
       key: 'dashboard',
       label: 'Dashboard',
@@ -24,7 +34,8 @@ export function useNavigation() {
       href: '/tasks',
       icon: 'FileTextOutlined',
       permissions: ['tasks.view'],
-      badge: null
+      badge: null,
+      requiresOrganization: true
     },
     {
       key: 'projects',
@@ -32,7 +43,8 @@ export function useNavigation() {
       href: '/projects',
       icon: 'ProjectOutlined',
       permissions: ['projects.view'],
-      badge: null
+      badge: null,
+      requiresOrganization: true
     },
     {
       key: 'statuses',
@@ -40,9 +52,10 @@ export function useNavigation() {
       href: '/statuses',
       icon: 'TagOutlined',
       permissions: ['statuses.view'],
-      badge: null
+      badge: null,
+      requiresOrganization: true
     }
-  ]
+  ])
 
   // Профильное меню
   const profileMenuItems = [
@@ -87,25 +100,40 @@ export function useNavigation() {
     return null
   })
 
-  // Проверка прав доступа (пока заглушка)
+  // Проверка прав доступа с организационным контекстом
   const hasPermission = (permission) => {
     if (!permission || permission.length === 0) return true
     
-    // TODO: Реализовать проверку прав через user permissions
     const user = page.props.auth?.user
     if (!user) return false
     
-    // Пока возвращаем true для всех авторизованных пользователей
-    return true
+    // Используем организационные права
+    switch (permission) {
+      case 'tasks.view':
+        return canViewTasks.value
+      case 'projects.view':
+        return canViewProjects.value
+      case 'statuses.view':
+        return canViewStatuses.value
+      default:
+        return true
+    }
   }
 
   // Фильтрация видимых пунктов меню
   const getVisibleItems = computed(() => {
-    return menuItems.filter(item => {
+    return menuItems.value.filter(item => {
       // Проверяем права доступа
       if (item.permissions && item.permissions.length > 0) {
-        return item.permissions.some(permission => hasPermission(permission))
+        const hasRequiredPermissions = item.permissions.some(permission => hasPermission(permission))
+        if (!hasRequiredPermissions) return false
       }
+      
+      // Проверяем наличие организационного контекста (если требуется)
+      if (item.requiresOrganization && !currentUser.value) {
+        return false
+      }
+      
       return true
     })
   })
@@ -125,22 +153,31 @@ export function useNavigation() {
   // Получить информацию о текущем пункте меню
   const getCurrentMenuItem = computed(() => {
     const currentRoute = getCurrentRoute.value
-    return menuItems.find(item => item.key === currentRoute)
+    return menuItems.value.find(item => item.key === currentRoute)
   })
 
-  // Получить хлебные крошки
+  // Получить хлебные крошки с организационным контекстом
   const getBreadcrumbs = computed(() => {
     const currentItem = getCurrentMenuItem.value
-    if (!currentItem) return []
+    const breadcrumbs = []
 
-    const breadcrumbs = [
-      {
-        title: 'Главная',
-        href: '/dashboard'
-      }
-    ]
+    // Добавляем главную страницу
+    breadcrumbs.push({
+      title: 'Главная',
+      href: '/dashboard'
+    })
 
-    if (currentItem.key !== 'dashboard') {
+    // Добавляем организацию если есть и страница требует организационный контекст
+    if (currentOrganization.value && currentItem?.requiresOrganization) {
+      breadcrumbs.push({
+        title: currentOrganization.value.name,
+        href: '#',
+        isOrganization: true
+      })
+    }
+
+    // Добавляем текущую страницу
+    if (currentItem && currentItem.key !== 'dashboard') {
       breadcrumbs.push({
         title: currentItem.label,
         href: currentItem.href
@@ -152,14 +189,14 @@ export function useNavigation() {
 
   // Утилиты для работы с badges
   const updateMenuBadge = (menuKey, badge) => {
-    const item = menuItems.find(item => item.key === menuKey)
+    const item = menuItems.value.find(item => item.key === menuKey)
     if (item) {
       item.badge = badge
     }
   }
 
   const clearAllBadges = () => {
-    menuItems.forEach(item => {
+    menuItems.value.forEach(item => {
       item.badge = null
     })
   }

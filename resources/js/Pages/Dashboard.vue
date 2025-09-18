@@ -1,20 +1,44 @@
 <template>
   <AppLayout title="Dashboard">
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-        Dashboard
-      </h2>
+      <div class="flex items-center justify-between">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+          Dashboard
+        </h2>
+        <div v-if="organization" class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+          <TeamOutlined class="mr-2" />
+          {{ organization.name }}
+        </div>
+      </div>
     </template>
 
     <div>
-      <div>
+      <!-- No Organization Message -->
+      <a-alert
+        v-if="message"
+        :message="message"
+        type="warning"
+        show-icon
+        class="mb-6"
+      >
+        <template #description>
+          <p>Для просмотра задач и проектов необходимо выбрать организацию из списка в верхней части страницы.</p>
+        </template>
+      </a-alert>
+
+      <div v-else>
         <!-- Welcome Card -->
         <a-card class="mb-6">
           <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
             Добро пожаловать, {{ user?.name }}!
           </h3>
           <p class="text-gray-600 dark:text-gray-400">
-            Система управления задачами на Inertia.js + Vue 3 + Ant Design
+            <template v-if="organization">
+              Вы работаете в организации <strong>{{ organization.name }}</strong>
+            </template>
+            <template v-else>
+              Система управления задачами на Inertia.js + Vue 3 + Ant Design
+            </template>
           </p>
         </a-card>
 
@@ -122,6 +146,7 @@
         </a-card>
       </div>
     </div>
+    </div>
   </AppLayout>
 </template>
 
@@ -136,7 +161,8 @@ import {
   ProjectOutlined,
   PlusOutlined,
   FolderOutlined,
-  UnorderedListOutlined
+  UnorderedListOutlined,
+  TeamOutlined
 } from '@ant-design/icons-vue'
 
 // Props from controller
@@ -149,6 +175,18 @@ const props = defineProps({
       completed: 0,
       projects: 0
     })
+  },
+  organization: {
+    type: Object,
+    default: null
+  },
+  message: {
+    type: String,
+    default: null
+  },
+  contextData: {
+    type: Object,
+    default: null
   }
 })
 
