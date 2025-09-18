@@ -17,6 +17,9 @@
 
           <!-- Right side -->
           <div class="flex items-center space-x-4">
+            <!-- Organization Selector -->
+            <OrganizationSelector />
+
             <!-- Theme Selector -->
             <ThemeSelector />
 
@@ -58,6 +61,7 @@ import GlobalErrorHandler from '../Components/shared/GlobalErrorHandler.vue'
 import NavigationMenu from '../Components/Navigation/NavigationMenu.vue'
 import ProfileDropdown from '../Components/Navigation/ProfileDropdown.vue'
 import BreadcrumbNav from '../Components/Navigation/BreadcrumbNav.vue'
+import OrganizationSelector from '../Components/Navigation/OrganizationSelector.vue'
 
 // Props
 defineProps({
