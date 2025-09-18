@@ -146,7 +146,6 @@
         </a-card>
       </div>
     </div>
-    </div>
   </AppLayout>
 </template>
 
