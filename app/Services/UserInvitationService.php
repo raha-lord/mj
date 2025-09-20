@@ -53,7 +53,8 @@ class UserInvitationService
         Organization $organization,
         string $email,
         string $role = 'member',
-        User $inviter = null
+        User $inviter = null,
+        string $message = null
     ): User {
         $user = User::where('email', $email)->first();
         
@@ -66,13 +67,52 @@ class UserInvitationService
             throw new \InvalidArgumentException("User is already a member of this organization");
         }
 
-        // Добавляем в организацию
+        // Если у пользователя есть пароль, создаем приглашение
+        if ($user->hasPassword()) {
+            return $this->createInvitation($organization, $user, $role, $inviter, $message);
+        }
+
+        // Если пароля нет, добавляем напрямую
         $organization->users()->attach($user->id, [
             'role' => $role,
             'joined_at' => now(),
             'notes' => $inviter 
                 ? "Added by {$inviter->name} ({$inviter->email})"
                 : 'System addition'
+        ]);
+
+        return $user;
+    }
+
+    /**
+     * Создать приглашение для существующего пользователя
+     */
+    public function createInvitation(
+        Organization $organization,
+        User $user,
+        string $role = 'member',
+        User $inviter = null,
+        string $message = null
+    ): User {
+        // Проверяем что нет активного приглашения
+        $existingInvitation = \App\Models\OrganizationInvitation::where('organization_id', $organization->id)
+            ->where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingInvitation) {
+            throw new \InvalidArgumentException("User already has a pending invitation to this organization");
+        }
+
+        // Создаем приглашение
+        \App\Models\OrganizationInvitation::create([
+            'organization_id' => $organization->id,
+            'user_id' => $user->id,
+            'invited_by' => $inviter ? $inviter->id : null,
+            'role' => $role,
+            'status' => 'pending',
+            'message' => $message,
+            'expires_at' => now()->addDays(7), // Приглашение действует 7 дней
         ]);
 
         return $user;
@@ -122,7 +162,8 @@ class UserInvitationService
         string $email,
         string $name,
         string $role = 'member',
-        User $inviter = null
+        User $inviter = null,
+        string $message = null
     ): array {
         $existingUser = User::where('email', $email)->first();
 
@@ -136,7 +177,17 @@ class UserInvitationService
                 ];
             }
 
-            $user = $this->addExistingUserToOrganization($organization, $email, $role, $inviter);
+            $user = $this->addExistingUserToOrganization($organization, $email, $role, $inviter, $message);
+            
+            // Если у пользователя есть пароль, значит создано приглашение
+            if ($user->hasPassword()) {
+                return [
+                    'user' => $user,
+                    'action' => 'invitation_sent',
+                    'message' => 'Invitation sent to existing user'
+                ];
+            }
+            
             return [
                 'user' => $user,
                 'action' => 'added_existing',

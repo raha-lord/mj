@@ -12,7 +12,7 @@ class OrganizationUser extends Model
 {
     use HasFactory, SoftDeletes, HasAuditFields;
 
-    protected $table = 'tasks_management.organization_user';
+    protected $table = 'organization_user';
 
     protected $fillable = [
         'organization_id',

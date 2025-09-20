@@ -17,6 +17,7 @@ class OrganizationContextService
      */
     public function getCurrentOrganization(User $user, Request $request = null): ?Organization
     {
+        
         // Сначала проверяем кеш
         $cachedOrgId = $this->getCachedOrganizationId($user);
         if ($cachedOrgId) {
@@ -38,6 +39,8 @@ class OrganizationContextService
 
         // Если ничего не найдено, берем первую доступную организацию
         $defaultOrganization = $this->getDefaultOrganization($user);
+        
+        
         if ($defaultOrganization) {
             $this->setCurrentOrganization($user, $defaultOrganization, $request);
         }
@@ -243,12 +246,14 @@ class OrganizationContextService
                 'id' => $currentOrg->id,
                 'name' => $currentOrg->name,
                 'description' => $currentOrg->description,
+                'user_role' => $currentRole,
             ] : null,
-            'available_organizations' => $availableOrgs->map(function ($org) {
+            'available_organizations' => $availableOrgs->map(function ($org) use ($user) {
                 return [
                     'id' => $org->id,
                     'name' => $org->name,
                     'description' => $org->description,
+                    'user_role' => $user->isSuperUser() ? 'super_user' : $org->getUserRole($user),
                 ];
             }),
             'current_role' => $currentRole,

@@ -5,6 +5,8 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationUserController;
 use App\Http\Controllers\SetPasswordController;
 use App\Http\Controllers\TimeLogController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\OrganizationInvitationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -107,9 +109,9 @@ Route::middleware(['web', 'auth'])->group(function () {
 });
 
 // Базовые маршруты организаций (доступно всем авторизованным пользователям)
-Route::middleware(['web', 'auth'])->group(function () {
+Route::middleware(['web', 'auth.api'])->group(function () {
     // Список организаций пользователя
-    Route::get('organizations', [OrganizationController::class, 'index'])->name('api.organizations.index');
+    Route::get('organizations', [OrganizationController::class, 'apiIndex'])->name('api.organizations.index');
     
     // Создание организации (доступно всем для самостоятельной регистрации)
     Route::post('organizations', [OrganizationController::class, 'store'])->name('api.organizations.store');
@@ -122,12 +124,23 @@ Route::middleware(['web', 'auth'])->group(function () {
     
     // Поиск организаций
     Route::get('organizations/search', [OrganizationController::class, 'search'])->name('api.organizations.search');
+    
+    // Поиск пользователей для приглашений
+    Route::get('users/search', [UserController::class, 'search'])->name('api.users.search');
+    
+    // Проверка email для приглашений
+    Route::get('users/check-email', [UserController::class, 'checkEmail'])->name('api.users.check-email');
+    
+    // Приглашения организаций
+    Route::get('invitations', [OrganizationInvitationController::class, 'index'])->name('api.invitations.index');
+    Route::post('invitations/{invitation}/accept', [OrganizationInvitationController::class, 'accept'])->name('api.invitations.accept');
+    Route::post('invitations/{invitation}/decline', [OrganizationInvitationController::class, 'decline'])->name('api.invitations.decline');
 });
 
 // Управление конкретной организацией (требует доступ к организации)
 Route::middleware(['web', 'auth', 'organization:member'])->group(function () {
     // Просмотр деталей организации
-    Route::get('organizations/{organization}', [OrganizationController::class, 'show'])->name('api.organizations.show');
+    Route::get('organizations/{organization}', [OrganizationController::class, 'apiShow'])->name('api.organizations.show');
 });
 
 // Управление организацией (только админы и супер пользователи)
@@ -171,4 +184,7 @@ Route::middleware(['web', 'auth', 'organization:org_admin'])->group(function () 
     
     // Отзыв приглашения
     Route::post('organizations/{organization}/users/{user}/revoke', [OrganizationUserController::class, 'revokeInvitation'])->name('api.organizations.users.revoke');
+    
+    // Отзыв приглашения через invitation ID
+    Route::post('invitations/{invitation}/revoke', [OrganizationInvitationController::class, 'revoke'])->name('api.invitations.revoke');
 });

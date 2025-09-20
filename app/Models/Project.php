@@ -12,7 +12,7 @@ class Project extends Model
 {
     use SoftDeletes, HasAuditFields;
 
-    protected $table = 'tasks_management.projects';
+    protected $table = 'projects';
 
     protected $fillable = [
         'name',

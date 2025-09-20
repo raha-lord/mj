@@ -20,6 +20,9 @@
             <!-- Organization Selector -->
             <OrganizationSelector />
 
+            <!-- Admin Dropdown -->
+            <AdminDropdown />
+
             <!-- Theme Selector -->
             <ThemeSelector />
 
@@ -54,7 +57,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import ThemeSelector from '../Components/shared/ThemeSelector.vue'
 import GlobalErrorHandler from '../Components/shared/GlobalErrorHandler.vue'
@@ -62,6 +65,8 @@ import NavigationMenu from '../Components/Navigation/NavigationMenu.vue'
 import ProfileDropdown from '../Components/Navigation/ProfileDropdown.vue'
 import BreadcrumbNav from '../Components/Navigation/BreadcrumbNav.vue'
 import OrganizationSelector from '../Components/Navigation/OrganizationSelector.vue'
+import AdminDropdown from '../Components/Navigation/AdminDropdown.vue'
+import { useOrganizationContext } from '../composables/organizations/useOrganizationContext'
 
 // Props
 defineProps({
@@ -71,6 +76,19 @@ defineProps({
 // Получаем данные страницы
 const page = usePage()
 
+// Инициализируем контекст организации
+const { initializeContext } = useOrganizationContext()
+
 // Shared data from Laravel
 const appName = computed(() => page.props.appName || 'Task Manager')
+
+// Инициализация при монтировании
+onMounted(async () => {
+  // Инициализируем контекст организации для правильной работы навигации
+  try {
+    await initializeContext()
+  } catch (error) {
+    console.warn('Failed to initialize organization context:', error)
+  }
+})
 </script>

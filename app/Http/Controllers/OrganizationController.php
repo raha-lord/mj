@@ -7,7 +7,10 @@ use App\Services\OrganizationService;
 use App\Services\OrganizationContextService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class OrganizationController extends Controller
 {
@@ -23,9 +26,9 @@ class OrganizationController extends Controller
     }
 
     /**
-     * Получить список организаций
+     * Получить список организаций (API)
      */
-    public function index(Request $request): JsonResponse
+    public function apiIndex(Request $request): JsonResponse
     {
         $user = $request->user();
         $organizations = $this->organizationService->getUserOrganizations($user);
@@ -47,9 +50,128 @@ class OrganizationController extends Controller
     }
 
     /**
-     * Получить детали организации
+     * Отображение страницы списка организаций
      */
-    public function show(Request $request, Organization $organization): JsonResponse
+    public function index(Request $request): Response
+    {
+        $user = $request->user();
+        $organizations = $this->organizationService->getUserOrganizations($user);
+
+        $organizationsData = $organizations->map(function ($org) use ($user) {
+            return [
+                'id' => $org->id,
+                'name' => $org->name,
+                'description' => $org->description,
+                'is_active' => $org->is_active,
+                'user_role' => $user->isSuperUser() ? 'super_user' : $org->getUserRole($user),
+                'users_count' => $org->getActiveUsersCount(),
+                'projects_count' => $org->getActiveProjectsCount(),
+                'created_at' => $org->created_at,
+                'updated_at' => $org->updated_at,
+            ];
+        });
+
+        $stats = [
+            'total' => $organizations->count(),
+            'active' => $organizations->where('is_active', true)->count(),
+            'total_members' => $organizations->sum(fn($org) => $org->getActiveUsersCount()),
+            'total_projects' => $organizations->sum(fn($org) => $org->getActiveProjectsCount()),
+        ];
+
+        return Inertia::render('Organizations/Index', [
+            'initialOrganizations' => $organizationsData,
+            'initialStats' => $stats,
+        ]);
+    }
+
+    /**
+     * Отображение страницы организации
+     */
+    public function show(Request $request, Organization $organization): Response
+    {
+        $user = $request->user();
+
+        // Проверяем доступ
+        if (!$this->organizationService->canUserAccessOrganization($user, $organization)) {
+            abort(403, 'Access denied');
+        }
+
+        $stats = $this->organizationService->getOrganizationStats($organization);
+        $userRole = $user->isSuperUser() ? 'super_user' : $organization->getUserRole($user);
+
+        return Inertia::render('Organizations/Show', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+                'description' => $organization->description,
+                'is_active' => $organization->is_active,
+                'settings' => $organization->settings,
+                'users_count' => $organization->getActiveUsersCount(),
+                'projects_count' => $organization->getActiveProjectsCount(),
+                'tasks_count' => $stats['tasks_count'] ?? 0,
+                'created_at' => $organization->created_at,
+                'updated_at' => $organization->updated_at,
+            ],
+            'userRole' => $userRole,
+        ]);
+    }
+
+    /**
+     * Отображение страницы настроек организации
+     */
+    public function settings(Request $request, Organization $organization): Response
+    {
+        $user = $request->user();
+
+        // Проверяем права управления
+        if (!$this->organizationService->canUserManageOrganization($user, $organization)) {
+            abort(403, 'Insufficient permissions');
+        }
+
+        return Inertia::render('Organizations/Settings', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+                'description' => $organization->description,
+                'is_active' => $organization->is_active,
+                'settings' => $organization->settings,
+                'users_count' => $organization->getActiveUsersCount(),
+                'projects_count' => $organization->getActiveProjectsCount(),
+                'created_at' => $organization->created_at,
+                'updated_at' => $organization->updated_at,
+            ],
+        ]);
+    }
+
+    /**
+     * Отображение страницы участников организации
+     */
+    public function members(Request $request, Organization $organization): Response
+    {
+        $user = $request->user();
+
+        // Проверяем доступ (все участники могут видеть других участников)
+        if (!$this->organizationService->canUserAccessOrganization($user, $organization)) {
+            abort(403, 'Access denied');
+        }
+
+        return Inertia::render('Organizations/Members', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+                'description' => $organization->description,
+                'is_active' => $organization->is_active,
+                'users_count' => $organization->getActiveUsersCount(),
+                'created_at' => $organization->created_at,
+                'updated_at' => $organization->updated_at,
+            ],
+        ]);
+    }
+
+    /**
+     * Получить детали организации (API)
+     */
+    public function apiShow(Request $request, Organization $organization): JsonResponse
     {
         $user = $request->user();
 
@@ -81,7 +203,7 @@ class OrganizationController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:tasks_management.organizations,name'],
+            'name' => ['required', 'string', 'max:255', 'unique:organizations,name'],
             'description' => ['nullable', 'string', 'max:1000'],
             'settings' => ['nullable', 'array'],
             'settings.allow_public_projects' => ['boolean'],
@@ -119,7 +241,7 @@ class OrganizationController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => ['sometimes', 'string', 'max:255', Rule::unique('tasks_management.organizations', 'name')->ignore($organization->id)],
+            'name' => ['sometimes', 'string', 'max:255', Rule::unique('organizations', 'name')->ignore($organization->id)],
             'description' => ['nullable', 'string', 'max:1000'],
             'is_active' => ['sometimes', 'boolean'],
             'settings' => ['nullable', 'array'],
@@ -167,7 +289,7 @@ class OrganizationController extends Controller
     public function switch(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'organization_id' => ['required', 'integer', 'exists:tasks_management.organizations,id'],
+            'organization_id' => ['required', 'integer', 'exists:organizations,id'],
         ]);
 
         $user = $request->user();
@@ -226,5 +348,66 @@ class OrganizationController extends Controller
                 ];
             }),
         ]);
+    }
+
+    /**
+     * Показать страницу выбора организации
+     */
+    public function select(Request $request): Response
+    {
+        $user = $request->user();
+        
+        // Получаем список доступных организаций
+        $availableOrganizations = $this->organizationService->getAvailableOrganizations($user);
+        
+        return Inertia::render('Organizations/Select', [
+            'availableOrganizations' => $availableOrganizations->map(function ($org) {
+                return [
+                    'id' => $org->id,
+                    'name' => $org->name,
+                    'description' => $org->description,
+                ];
+            }),
+            'message' => session('message'),
+        ]);
+    }
+
+    /**
+     * Создать организацию (web)
+     */
+    public function webStore(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:organizations,name'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $user = $request->user();
+        $organization = $this->organizationService->createOrganization($validated, $user);
+
+        // Устанавливаем новую организацию как текущую
+        $this->contextService->setCurrentOrganization($user, $organization, $request);
+
+        return redirect()->route('dashboard')
+            ->with('success', 'Организация "' . $organization->name . '" успешно создана!');
+    }
+
+    /**
+     * Переключиться на организацию (web)
+     */
+    public function webSwitch(Request $request, Organization $organization): RedirectResponse
+    {
+        $user = $request->user();
+
+        // Проверяем доступ к организации
+        if (!$this->organizationService->canUserAccessOrganization($user, $organization)) {
+            abort(403, 'Access denied');
+        }
+
+        // Переключаемся на организацию
+        $this->contextService->setCurrentOrganization($user, $organization, $request);
+
+        return redirect()->route('dashboard')
+            ->with('success', 'Переключились на организацию "' . $organization->name . '"');
     }
 }

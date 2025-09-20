@@ -19,78 +19,125 @@ export function useNavigation() {
   const { currentOrganization } = useOrganizationContext()
   
   // Базовая конфигурация меню с организационным контекстом
-  const menuItems = computed(() => [
-    {
+  const menuItems = computed(() => {
+    const items = []
+    
+    // Dashboard всегда первый
+    items.push({
       key: 'dashboard',
       label: 'Dashboard',
       href: '/dashboard',
       icon: 'DashboardOutlined',
       permissions: [],
       badge: null
-    },
-    {
-      key: 'tasks',
-      label: 'Задачи',
-      href: '/tasks',
-      icon: 'FileTextOutlined',
-      permissions: ['tasks.view'],
-      badge: null,
-      requiresOrganization: true
-    },
-    {
-      key: 'projects',
-      label: 'Проекты',
-      href: '/projects',
-      icon: 'ProjectOutlined',
-      permissions: ['projects.view'],
-      badge: null,
-      requiresOrganization: true
-    },
-    {
-      key: 'statuses',
-      label: 'Статусы',
-      href: '/statuses',
-      icon: 'TagOutlined',
-      permissions: ['statuses.view'],
-      badge: null,
-      requiresOrganization: true
+    })
+    
+    // Меню для SuperUser
+    if (currentUser.value?.is_super_user) {
+      items.push(
+        {
+          key: 'organizations',
+          label: 'Организации',
+          href: '/organizations',
+          icon: 'TeamOutlined',
+          permissions: [],
+          badge: null
+        },
+        {
+          key: 'users',
+          label: 'Пользователи',
+          href: '/users',
+          icon: 'UserOutlined',
+          permissions: [],
+          badge: null
+        },
+        {
+          key: 'projects',
+          label: 'Проекты',
+          href: '/projects',
+          icon: 'ProjectOutlined',
+          permissions: [],
+          badge: null
+        },
+        {
+          key: 'tasks',
+          label: 'Задачи',
+          href: '/tasks',
+          icon: 'FileTextOutlined',
+          permissions: [],
+          badge: null
+        }
+      )
     }
-  ])
+    // Меню для обычных пользователей (Admin и Member)
+    else {
+      items.push(
+        {
+          key: 'projects',
+          label: 'Проекты',
+          href: '/projects',
+          icon: 'ProjectOutlined',
+          permissions: [],
+          badge: null
+        },
+        {
+          key: 'tasks',
+          label: 'Задачи',
+          href: '/tasks',
+          icon: 'FileTextOutlined',
+          permissions: [],
+          badge: null
+        }
+      )
+    }
+    
+    return items
+  })
 
   // Профильное меню
-  const profileMenuItems = [
-    {
-      key: 'profile',
-      label: 'Профиль',
-      href: '/profile',
-      icon: 'UserOutlined',
-      permissions: []
-    },
-    {
-      key: 'settings',
-      label: 'Настройки',
-      href: '/profile/edit',
-      icon: 'SettingOutlined',
-      permissions: []
-    },
-    {
-      type: 'divider'
-    },
-    {
-      key: 'logout',
-      label: 'Выйти',
-      href: '/logout',
-      icon: 'LogoutOutlined',
-      method: 'post',
-      permissions: []
-    }
-  ]
+  const profileMenuItems = computed(() => {
+    const items = [
+      {
+        key: 'profile',
+        label: 'Профиль',
+        href: '/profile',
+        icon: 'UserOutlined',
+        permissions: []
+      },
+      {
+        key: 'settings',
+        label: 'Настройки',
+        href: '/profile/edit',
+        icon: 'SettingOutlined',
+        permissions: []
+      }
+    ]
+
+
+    items.push(
+      {
+        type: 'divider'
+      },
+      {
+        key: 'logout',
+        label: 'Выйти',
+        href: '/logout',
+        icon: 'LogoutOutlined',
+        method: 'post',
+        permissions: []
+      }
+    )
+
+    return items
+  })
 
   // Получить текущий маршрут
   const getCurrentRoute = computed(() => {
     const url = page.url
     
     // Определяем активный пункт меню на основе URL
+    if (url.includes('/organizations')) return 'organizations'
+    if (url.includes('/users')) return 'users'
     if (url.includes('/tasks')) return 'tasks'
     if (url.includes('/projects')) return 'projects'  
     if (url.includes('/statuses')) return 'statuses'
@@ -107,14 +154,17 @@ export function useNavigation() {
     const user = page.props.auth?.user
     if (!user) return false
     
-    // Используем организационные права
+    // Супер пользователь имеет все права
+    if (user.is_super_user) return true
+    
+    // Для обычных пользователей проверяем через useUserPermissions
     switch (permission) {
       case 'tasks.view':
-        return canViewTasks.value
+        return canViewTasks?.value || false
       case 'projects.view':
-        return canViewProjects.value
+        return canViewProjects?.value || false
       case 'statuses.view':
-        return canViewStatuses.value
+        return canViewStatuses?.value || false
       default:
         return true
     }
@@ -129,18 +179,13 @@ export function useNavigation() {
         if (!hasRequiredPermissions) return false
       }
       
-      // Проверяем наличие организационного контекста (если требуется)
-      if (item.requiresOrganization && !currentUser.value) {
-        return false
-      }
-      
       return true
     })
   })
 
   // Фильтрация видимых пунктов профильного меню
   const getVisibleProfileItems = computed(() => {
-    return profileMenuItems.filter(item => {
+    return profileMenuItems.value.filter(item => {
       if (item.type === 'divider') return true
       
       if (item.permissions && item.permissions.length > 0) {

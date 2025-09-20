@@ -16,7 +16,7 @@ class Task extends Model
 {
     use SoftDeletes, HasAuditFields;
 
-    protected $table = 'tasks_management.tasks';
+    protected $table = 'tasks';
 
     protected $fillable = [
         'name',
@@ -88,9 +88,9 @@ class Task extends Model
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'tasks_management.task_user')
+        return $this->belongsToMany(User::class, 'task_user')
             ->withPivot(['role', 'assigned_at', 'completed_at', 'notes'])
-            ->whereNull('tasks_management.task_user.deleted_at')
+            ->whereNull('task_user.deleted_at')
             ->withTimestamps();
     }
 

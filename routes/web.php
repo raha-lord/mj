@@ -4,6 +4,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\SetPasswordController;
+use App\Http\Controllers\OrganizationSelectionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,7 +18,33 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::redirect('/', '/dashboard');
+// Главная страница с проверкой организации
+Route::get('/', function () {
+    if (!auth()->check()) {
+        return redirect()->route('login');
+    }
+    
+    $user = auth()->user();
+    
+    // Проверяем нужно ли установить пароль
+    if (!$user->hasPassword()) {
+        return redirect()->route('set-password');
+    }
+    
+    // Проверяем есть ли у пользователя организации
+    if ($user->organizations()->count() === 0) {
+        // Проверяем есть ли приглашения
+        $hasInvitations = \App\Models\OrganizationInvitation::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
+            
+        if ($hasInvitations) {
+            return redirect()->route('organization-selection');
+        }
+    }
+    
+    return redirect()->route('dashboard');
+});
 
 // Установка пароля (доступно без organization middleware)
 Route::middleware(['auth'])->group(function () {
@@ -25,9 +52,26 @@ Route::middleware(['auth'])->group(function () {
     Route::post('set-password', [SetPasswordController::class, 'store'])->name('set-password.store');
 });
 
+// Выбор организации для пользователей без организации
+Route::middleware(['auth'])->group(function () {
+    Route::get('organization-selection', [OrganizationSelectionController::class, 'index'])->name('organization-selection');
+});
+
+
 Route::get('dashboard', [App\Http\Controllers\HomeController::class, 'index'])
     ->middleware(['auth', 'verified', 'organization:member'])
     ->name('dashboard');
+
+// Управление организациями (доступно всем авторизованным)
+Route::middleware(['auth'])->group(function () {
+    Route::get('organizations/select', [App\Http\Controllers\OrganizationController::class, 'select'])->name('organizations.select');
+    Route::post('organizations/{organization}/switch', [App\Http\Controllers\OrganizationController::class, 'webSwitch'])->name('organizations.switch');
+    Route::get('organizations', [App\Http\Controllers\OrganizationController::class, 'index'])->name('organizations.index');
+    Route::post('organizations', [App\Http\Controllers\OrganizationController::class, 'webStore'])->name('organizations.store');
+    Route::get('organizations/{organization}', [App\Http\Controllers\OrganizationController::class, 'show'])->name('organizations.show');
+    Route::get('organizations/{organization}/settings', [App\Http\Controllers\OrganizationController::class, 'settings'])->name('organizations.settings');
+    Route::get('organizations/{organization}/members', [App\Http\Controllers\OrganizationController::class, 'members'])->name('organizations.members');
+});
 
 // Profile route handled by auth.php
 

@@ -239,4 +239,18 @@ class OrganizationService
 
         return $organizations->limit($limit)->get();
     }
+
+    /**
+     * Получить доступные организации для пользователя
+     */
+    public function getAvailableOrganizations(User $user): Collection
+    {
+        if ($user->isSuperUser()) {
+            // Супер пользователь видит все активные организации
+            return Organization::active()->get();
+        }
+
+        // Обычный пользователь видит только организации, в которых он состоит
+        return $user->organizations()->where('is_active', true)->get();
+    }
 }

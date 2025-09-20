@@ -68,7 +68,19 @@ class OrganizationMiddleware
             if ($user->isSuperUser()) {
                 abort(404, 'No organizations found');
             } else {
-                abort(403, 'You are not a member of any organization');
+                // Проверяем есть ли у пользователя приглашения
+                $hasInvitations = \App\Models\OrganizationInvitation::where('user_id', $user->id)
+                    ->where('status', 'pending')
+                    ->exists();
+                
+                
+                if ($hasInvitations) {
+                    // Перенаправляем на страницу выбора организации если есть приглашения
+                    return redirect()->route('organization-selection');
+                } else {
+                    // Если приглашений нет, показываем ошибку доступа
+                    abort(403, 'You are not a member of any organization');
+                }
             }
         }
 
@@ -80,8 +92,15 @@ class OrganizationMiddleware
      */
     protected function checkSpecificOrganizationAccess(Request $request, Closure $next, $user, array $allowedRoles): Response
     {
-        $organizationId = $request->route('organization');
-        $organization = Organization::findOrFail($organizationId);
+        $organization = $request->route('organization');
+        
+        // Если это уже объект Organization (model binding), используем его
+        if ($organization instanceof Organization) {
+            // Все хорошо, объект уже получен
+        } else {
+            // Если это ID, находим организацию
+            $organization = Organization::findOrFail($organization);
+        }
 
         // Проверяем доступ к организации
         if (!$user->isSuperUser() && !$organization->hasUser($user)) {

@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\TaskAssignmentService;
 use App\Services\TaskService;
 use App\Services\TimeLogService;
+use App\Services\OrganizationContextService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -18,19 +19,46 @@ class TaskController extends Controller
 {
     protected TaskService $taskService;
     protected TaskAssignmentService $assignmentService;
-
     protected TimeLogService $timeLogService;
-    public function __construct(TaskService $taskService, TaskAssignmentService $assignmentService,     TimeLogService $timeLogService)
-    {
+    protected OrganizationContextService $contextService;
+
+    public function __construct(
+        TaskService $taskService, 
+        TaskAssignmentService $assignmentService,
+        TimeLogService $timeLogService,
+        OrganizationContextService $contextService
+    ) {
         $this->taskService = $taskService;
         $this->assignmentService = $assignmentService;
         $this->timeLogService = $timeLogService;
+        $this->contextService = $contextService;
     }
 
     public function index(Request $request)
     {
-        $tasks = $this->taskService->getFilteredTasks($request, 25);
-        $filterData = $this->taskService->getFilterData();
+        $user = $request->user();
+        $currentOrganization = $this->contextService->getCurrentOrganization($user, $request);
+        
+        // Если нет текущей организации, показываем пустую страницу с сообщением
+        if (!$currentOrganization) {
+            return Inertia::render('Tasks/Index', [
+                'tasks' => [],
+                'pagination' => [
+                    'current_page' => 1,
+                    'per_page' => 25,
+                    'total' => 0,
+                    'last_page' => 1
+                ],
+                'statuses' => [],
+                'projects' => [],
+                'users' => [],
+                'message' => 'Выберите организацию для просмотра задач',
+                'needsOrganization' => true,
+            ]);
+        }
+
+        $tasks = $this->taskService->getFilteredTasks($request, 25, $currentOrganization);
+        $filterData = $this->taskService->getFilterData($currentOrganization);
 
         return Inertia::render('Tasks/Index', [
             'tasks' => $tasks->items(),
@@ -43,6 +71,11 @@ class TaskController extends Controller
             'statuses' => $filterData['statuses'],
             'projects' => $filterData['projects'],
             'users' => $filterData['users'],
+            'currentOrganization' => [
+                'id' => $currentOrganization->id,
+                'name' => $currentOrganization->name,
+            ],
+            'needsOrganization' => false,
         ]);
     }
 

@@ -3,42 +3,42 @@
 ## Фаза 1: Основа базы данных (2-3 дня)
 
 ### 1.1 Создание миграций
-- [ ] `create_organizations_table` - основная таблица организаций
-- [ ] `create_organization_user_table` - связь пользователей с организациями и ролями
-- [ ] `add_organization_id_to_projects_table` - привязка проектов к организациям  
-- [ ] `add_is_super_user_to_users_table` - флаг суперпользователя
-- [ ] `add_password_set_at_to_users_table` - отслеживание установки пароля
+- [x] `create_organizations_table` - основная таблица организаций
+- [x] `create_organization_user_table` - связь пользователей с организациями и ролями
+- [x] `add_organization_id_to_projects_table` - привязка проектов к организациям  
+- [x] `add_is_super_user_to_users_table` - флаг суперпользователя
+- [x] `add_password_set_at_to_users_table` - отслеживание установки пароля
 
 ### 1.2 Создание моделей
-- [ ] `Organization` model с relationships
-- [ ] `OrganizationUser` pivot model 
-- [ ] Обновить `User` model (добавить relationships, scopes)
-- [ ] Обновить `Project` model (добавить organization relationship)
-- [ ] Обновить `Task` model (добавить organization scope через project)
+- [x] `Organization` model с relationships
+- [x] `OrganizationUser` pivot model 
+- [x] Обновить `User` model (добавить relationships, scopes)
+- [x] Обновить `Project` model (добавить organization relationship)
+- [x] Обновить `Task` model (добавить organization scope через project)
 
 ### 1.3 Создание сидеров
-- [ ] `OrganizationSeeder` - создание "Первой организации"
-- [ ] `SuperUserSeeder` - создание первого суперпользователя
-- [ ] Обновить существующие сидеры для привязки к дефолтной организации
+- [x] `OrganizationSeeder` - создание "Первой организации"
+- [x] `SuperUserSeeder` - создание первого суперпользователя
+- [x] Обновить существующие сидеры для привязки к дефолтной организации
 
 ## Фаза 2: Бизнес-логика (3-4 дня)
 
 ### 2.1 Services и Repository
-- [ ] `OrganizationService` - бизнес-логика организаций
-- [ ] `UserInvitationService` - управление приглашениями пользователей
-- [ ] `OrganizationContextService` - управление контекстом текущей организации
+- [x] `OrganizationService` - бизнес-логика организаций
+- [x] `UserInvitationService` - управление приглашениями пользователей
+- [x] `OrganizationContextService` - управление контекстом текущей организации
 
 ### 2.2 Middleware и Guards
-- [ ] `OrganizationMiddleware` - проверка прав доступа
-- [ ] `SetPasswordMiddleware` - редирект на установку пароля
+- [x] `OrganizationMiddleware` - проверка прав доступа
+- [x] `SetPasswordMiddleware` - редирект на установку пароля
 - [ ] `OrganizationContextMiddleware` - установка контекста организации
 
 ### 2.3 Controllers
-- [ ] `OrganizationController` - CRUD операции с организациями
-- [ ] `OrganizationUserController` - управление участниками
+- [x] `OrganizationController` - CRUD операции с организациями
+- [x] `OrganizationUserController` - управление участниками
 - [ ] `OrganizationProjectController` - проекты в контексте организации
 - [ ] Обновить `AuthController` - добавить логику создания организации при регистрации
-- [ ] `SetPasswordController` - установка пароля при первом входе
+- [x] `SetPasswordController` - установка пароля при первом входе
 
 ## Фаза 3: API Routes (1-2 дня)
 
@@ -65,13 +65,13 @@ Route::middleware(['organization:member'])->group(function () {
 ```
 
 ### 3.2 Обновление существующих маршрутов
-- [ ] Добавить organization middleware к проектам и задачам
-- [ ] Обновить фильтрацию данных по текущей организации
+- [x] Добавить organization middleware к проектам и задачам
+- [x] Обновить фильтрацию данных по текущей организации
 
 ## Фаза 4: Frontend (4-5 дней)
 
 ### 4.1 Компоненты организаций
-- [ ] `OrganizationSelector` - переключатель организаций в header
+- [x] `OrganizationSelector` - переключатель организаций в header
 - [ ] `OrganizationList` - список организаций пользователя
 - [ ] `OrganizationForm` - форма создания/редактирования организации
 - [ ] `OrganizationSettings` - настройки организации
@@ -82,16 +82,16 @@ Route::middleware(['organization:member'])->group(function () {
 - [ ] `UserRoleSelector` - изменение ролей участников
 
 ### 4.3 Композаблы
-- [ ] `useOrganizations` - работа с организациями
-- [ ] `useOrganizationContext` - текущая организация
-- [ ] `useUserPermissions` - проверка прав пользователя
+- [x] `useOrganizations` - работа с организациями
+- [x] `useOrganizationContext` - текущая организация
+- [x] `useUserPermissions` - проверка прав пользователя
 
 ### 4.4 Страницы
 - [ ] `/organizations` - список организаций (SuperUser)
 - [ ] `/organizations/:id` - детали организации  
 - [ ] `/organizations/:id/settings` - настройки организации
 - [ ] `/organizations/:id/members` - участники организации
-- [ ] `/set-password` - установка пароля при первом входе
+- [x] `/set-password` - установка пароля при первом входе
 
 ## Фаза 5: Обновление существующих страниц (2-3 дня)
 

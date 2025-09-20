@@ -47,13 +47,13 @@ class HomeController extends Controller
                 'totalTasks' => $organizationTasks->count(),
                 'inProgress' => $organizationTasks->where('status_id', function($query) {
                     $query->select('id')
-                          ->from('tasks_management.statuses')
+                          ->from('statuses')
                           ->where('slug', 'in-progress')
                           ->limit(1);
                 })->count(),
                 'completed' => $organizationTasks->where('status_id', function($query) {
                     $query->select('id')
-                          ->from('tasks_management.statuses')
+                          ->from('statuses')
                           ->where('slug', 'completed')
                           ->limit(1);
                 })->count(),

@@ -6,6 +6,17 @@
     </a-button>
     <template #overlay>
       <a-menu>
+        <!-- User Role Display -->
+        <a-menu-item-group v-if="userRole">
+          <template #title>
+            <span class="text-xs text-gray-500 uppercase tracking-wide font-medium">
+              {{ userRole }}
+            </span>
+          </template>
+        </a-menu-item-group>
+        
+        <a-menu-divider v-if="userRole" />
+        
         <template
           v-for="item in getVisibleProfileItems"
           :key="item.key || 'divider'"
@@ -41,6 +52,7 @@ import { computed } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import { DownOutlined } from '@ant-design/icons-vue'
 import { useNavigation } from '../../composables/navigation/useNavigation.js'
+import { useUserPermissions } from '../../composables/organizations/useUserPermissions.js'
 import {
   DashboardOutlined,
   FileTextOutlined,
@@ -68,4 +80,15 @@ const user = computed(() => page.props.auth?.user)
 
 // Use navigation composable
 const { getVisibleProfileItems } = useNavigation()
+
+// Use permissions to get role info
+const { getRoleLabel, currentUserRole, isSuperUser } = useUserPermissions()
+
+// Get current user role for display
+const userRole = computed(() => {
+  if (isSuperUser.value) {
+    return getRoleLabel('super_user')
+  }
+  return currentUserRole.value ? getRoleLabel(currentUserRole.value) : null
+})
 </script>

@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Organization;
+use App\Services\OrganizationContextService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
@@ -16,6 +19,12 @@ use Inertia\Response;
 
 class AuthController extends Controller
 {
+    protected OrganizationContextService $contextService;
+
+    public function __construct(OrganizationContextService $contextService)
+    {
+        $this->contextService = $contextService;
+    }
     /**
      * Показать форму входа
      */
@@ -36,6 +45,21 @@ class AuthController extends Controller
 
         if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             $request->session()->regenerate();
+
+            // Проверяем, есть ли у пользователя организации
+            $user = Auth::user();
+            $organizations = $user->organizations()->where('is_active', true)->get();
+            
+            // Если нет активных организаций, перенаправляем на страницу создания организации
+            if ($organizations->isEmpty()) {
+                return redirect()->route('organizations.select')
+                    ->with('message', 'Добро пожаловать! Сначала выберите или создайте организацию.');
+            }
+
+            // Если есть только одна организация, автоматически устанавливаем её как текущую
+            if ($organizations->count() === 1) {
+                $this->contextService->setCurrentOrganization($user, $organizations->first(), $request);
+            }
 
             return redirect()->intended(route('dashboard', absolute: false));
         }
@@ -77,6 +101,7 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Создаем пользователя
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,

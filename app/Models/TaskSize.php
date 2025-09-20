@@ -11,7 +11,7 @@ class TaskSize extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'tasks_management.task_sizes';
+    protected $table = 'task_sizes';
 
     protected $fillable = [
         'code',

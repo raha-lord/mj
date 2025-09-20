@@ -10,7 +10,7 @@ class Status extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'tasks_management.statuses';
+    protected $table = 'statuses';
 
     protected $fillable = [
         'slug',

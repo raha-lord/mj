@@ -13,7 +13,7 @@ class Organization extends Model
 {
     use HasFactory, SoftDeletes, HasAuditFields;
 
-    protected $table = 'tasks_management.organizations';
+    protected $table = 'organizations';
 
     protected $fillable = [
         'name',
@@ -31,9 +31,9 @@ class Organization extends Model
     // Отношения к пользователям
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'tasks_management.organization_user')
+        return $this->belongsToMany(User::class, 'organization_user')
             ->withPivot(['role', 'joined_at', 'notes'])
-            ->whereNull('tasks_management.organization_user.deleted_at')
+            ->whereNull('organization_user.deleted_at')
             ->withTimestamps();
     }
 

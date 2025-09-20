@@ -89,9 +89,9 @@ class User extends Authenticatable
     // Отношения к задачам
     public function tasks(): BelongsToMany
     {
-        return $this->belongsToMany(Task::class, 'tasks_management.task_user')
+        return $this->belongsToMany(Task::class, 'task_user')
             ->withPivot(['role', 'assigned_at', 'completed_at', 'notes'])
-            ->whereNull('tasks_management.task_user.deleted_at')
+            ->whereNull('task_user.deleted_at')
             ->withTimestamps();
     }
 
@@ -144,9 +144,9 @@ class User extends Authenticatable
     public function getActiveTasks()
     {
         return $this->assignedTasks()
-            ->whereNull('tasks_management.tasks.deleted_at')
-            ->whereNull('tasks_management.tasks.completed_date')
-            ->whereHas('statuses', function ($q) {
+            ->whereNull('tasks.deleted_at')
+            ->whereNull('tasks.completed_date')
+            ->whereHas('status', function ($q) {
                 $q->where('is_final', false);
             });
     }
@@ -157,9 +157,9 @@ class User extends Authenticatable
     public function getOverdueTasks()
     {
         return $this->assignedTasks()
-            ->whereNull('tasks_management.tasks.deleted_at')
-            ->whereNull('tasks_management.tasks.completed_date')
-            ->where('tasks_management.tasks.due_date', '<', now());
+            ->whereNull('tasks.deleted_at')
+            ->whereNull('tasks.completed_date')
+            ->where('tasks.due_date', '<', now());
     }
 
     /**
@@ -171,7 +171,7 @@ class User extends Authenticatable
             'total' => $this->assignedTasks()->count(),
             'active' => $this->getActiveTasks()->count(),
             'completed' => $this->assignedTasks()
-                ->whereNotNull('tasks_management.tasks.completed_date')
+                ->whereNotNull('tasks.completed_date')
                 ->count(),
             'overdue' => $this->getOverdueTasks()->count(),
         ];
@@ -180,9 +180,9 @@ class User extends Authenticatable
     // Отношения к организациям
     public function organizations(): BelongsToMany
     {
-        return $this->belongsToMany(Organization::class, 'tasks_management.organization_user')
+        return $this->belongsToMany(Organization::class, 'organization_user')
             ->withPivot(['role', 'joined_at', 'notes'])
-            ->whereNull('tasks_management.organization_user.deleted_at')
+            ->whereNull('organization_user.deleted_at')
             ->withTimestamps();
     }
 
@@ -222,7 +222,8 @@ class User extends Authenticatable
 
     public function hasPassword(): bool
     {
-        return !empty($this->password_set_at);
+        // Проверяем наличие хеша пароля, а не только password_set_at
+        return !empty($this->password);
     }
 
     public function belongsToOrganization($organizationId): bool

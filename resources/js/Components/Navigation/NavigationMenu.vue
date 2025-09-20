@@ -36,7 +36,8 @@ import {
   TagOutlined,
   UserOutlined,
   SettingOutlined,
-  LogoutOutlined
+  LogoutOutlined,
+  TeamOutlined
 } from '@ant-design/icons-vue'
 
 // Icons mapping
@@ -47,7 +48,8 @@ const iconComponents = {
   TagOutlined,
   UserOutlined,
   SettingOutlined,
-  LogoutOutlined
+  LogoutOutlined,
+  TeamOutlined
 }
 
 // Use navigation composable

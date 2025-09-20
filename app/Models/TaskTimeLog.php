@@ -11,7 +11,7 @@ class TaskTimeLog extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'tasks_management.task_time_logs';
+    protected $table = 'task_time_logs';
 
 
     protected $fillable = [

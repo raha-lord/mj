@@ -25,7 +25,8 @@ export function useOrganizationContext() {
     if (!currentOrganization.value || !currentUser.value) return null
     
     // Роль должна приходить с сервера через контекст
-    return currentOrganization.value.user_role || 'member'
+    // Не делаем предположений - если роль не пришла, возвращаем null
+    return currentOrganization.value.user_role || null
   })
 
   // Проверка прав доступа

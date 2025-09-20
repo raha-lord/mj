@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserActivity extends Model
 {
-    protected $table = 'audit.user_activity';
+    protected $table = 'user_activity';
 
     public $timestamps = false;
 

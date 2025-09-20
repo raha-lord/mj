@@ -139,6 +139,8 @@ export function useUserPermissions() {
    * Получить название роли для отображения
    */
   const getRoleLabel = (role) => {
+    if (!role) return 'Загрузка...'
+    
     const roleLabels = {
       'super_user': 'Супер администратор',
       'org_admin': 'Администратор организации',

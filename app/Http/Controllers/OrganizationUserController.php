@@ -38,14 +38,23 @@ class OrganizationUserController extends Controller
         $members = $organization->users()->get();
 
         return response()->json([
-            'members' => $members->map(function ($member) {
+            'data' => $members->map(function ($member) {
+                // Определяем статус на основе установки пароля
+                $status = $member->hasPassword() ? 'active' : 'pending';
+                
                 return [
                     'id' => $member->id,
                     'name' => $member->name,
                     'email' => $member->email,
-                    'role' => $member->pivot->role,
-                    'joined_at' => $member->pivot->joined_at,
-                    'notes' => $member->pivot->notes,
+                    'avatar' => $member->avatar ?? null,
+                    'last_activity_at' => $member->last_activity_at,
+                    'pivot' => [
+                        'role' => $member->pivot->role,
+                        'status' => $status,
+                        'joined_at' => $member->pivot->joined_at,
+                        'created_at' => $member->pivot->created_at,
+                        'notes' => $member->pivot->notes,
+                    ],
                     'has_password' => $member->hasPassword(),
                     'is_super_user' => $member->isSuperUser(),
                 ];
@@ -66,11 +75,33 @@ class OrganizationUserController extends Controller
             abort(403, 'Insufficient permissions');
         }
 
-        $validated = $request->validate([
-            'email' => ['required', 'email', 'max:255'],
-            'name' => ['required', 'string', 'max:255'],
-            'role' => ['required', Rule::in(['member', 'project_manager', 'org_admin'])],
-        ]);
+        // Валидация зависит от способа приглашения
+        if ($request->has('user_id')) {
+            // Приглашение существующего пользователя
+            $validated = $request->validate([
+                'user_id' => ['required', 'integer', 'exists:users,id'],
+                'role' => ['required', Rule::in(['member', 'project_manager', 'org_admin'])],
+                'message' => ['nullable', 'string', 'max:500'],
+                'notify_immediately' => ['boolean'],
+            ]);
+            
+            // Получаем пользователя и его email
+            $targetUser = User::findOrFail($validated['user_id']);
+            $email = $targetUser->email;
+            $name = $targetUser->name;
+        } else {
+            // Приглашение по email
+            $validated = $request->validate([
+                'email' => ['required', 'email', 'max:255'],
+                'name' => ['nullable', 'string', 'max:255'],
+                'role' => ['required', Rule::in(['member', 'project_manager', 'org_admin'])],
+                'message' => ['nullable', 'string', 'max:500'],
+                'notify_immediately' => ['boolean'],
+            ]);
+            
+            $email = $validated['email'];
+            $name = $validated['name'] ?? '';
+        }
 
         // Проверяем права назначения ролей
         if ($validated['role'] === 'org_admin' && !$this->organizationService->canUserManageOrganization($user, $organization)) {
@@ -78,12 +109,14 @@ class OrganizationUserController extends Controller
         }
 
         try {
+            $message = $validated['message'] ?? null;
             $result = $this->invitationService->findOrCreateUser(
                 $organization,
-                $validated['email'],
-                $validated['name'],
+                $email,
+                $name,
                 $validated['role'],
-                $user
+                $user,
+                $message
             );
 
             return response()->json([
