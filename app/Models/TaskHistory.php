@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TaskHistory extends Model
 {
-    protected $table = 'audit.task_history';
+    protected $table = 'task_history';
 
     public $timestamps = false;
 

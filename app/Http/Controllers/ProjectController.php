@@ -3,122 +3,170 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-
 use App\Models\Project;
+use App\Services\OrganizationContextService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Redirector;
-use Illuminate\View\View;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ProjectController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return View
-     */
-    public function index(Request $request)
+    protected OrganizationContextService $contextService;
+
+    public function __construct(OrganizationContextService $contextService)
     {
-        $keyword = $request->get('search');
-        $perPage = 25;
-
-        if (!empty($keyword)) {
-            $project = Project::where('slug', 'LIKE', "%$keyword%")
-                ->orWhere('name', 'LIKE', "%$keyword%")
-                ->orWhere('description', 'LIKE', "%$keyword%")
-                ->latest()->paginate($perPage);
-        } else {
-            $project = Project::latest()->paginate($perPage);
-        }
-
-        return view('projects.index', compact('project'));
+        $this->contextService = $contextService;
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return View
+     * Display a listing of the resource.
      */
-    public function create()
+    public function index(Request $request): Response
     {
-        return view('projects.create');
+        $user = $request->user();
+        $currentOrganization = $this->contextService->getCurrentOrganization($user, $request);
+        
+        // Если нет текущей организации, редиректим на выбор организации
+        if (!$currentOrganization) {
+            return Inertia::render('Projects/Index', [
+                'projects' => [],
+                'pagination' => [
+                    'current_page' => 1,
+                    'per_page' => 25,
+                    'total' => 0,
+                ],
+                'message' => 'Выберите организацию для просмотра проектов',
+                'needsOrganization' => true,
+            ]);
+        }
+
+        $search = $request->get('search');
+        $status = $request->get('status');
+        $visibility = $request->get('visibility');
+        $perPage = $request->get('per_page', 25);
+
+        $query = Project::withCount('tasks')
+            ->forOrganization($currentOrganization->id)
+            ->accessibleBy($user);
+
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%$search%")
+                  ->orWhere('description', 'LIKE', "%$search%");
+            });
+        }
+
+        if (!empty($status)) {
+            $query->where('status', $status);
+        }
+
+        if (!empty($visibility)) {
+            $query->where('visibility', $visibility);
+        }
+
+        $projects = $query->latest()->paginate($perPage);
+
+        // Добавляем роль пользователя в каждом проекте
+        $projectsWithRoles = $projects->getCollection()->map(function ($project) use ($user) {
+            $projectArray = $project->toArray();
+            $projectArray['user_role'] = $project->getUserRole($user);
+            $projectArray['can_manage'] = $project->canUserManage($user);
+            return $projectArray;
+        });
+
+        return Inertia::render('Projects/Index', [
+            'projects' => $projectsWithRoles,
+            'pagination' => [
+                'current_page' => $projects->currentPage(),
+                'per_page' => $projects->perPage(),
+                'total' => $projects->total(),
+            ],
+            'currentOrganization' => [
+                'id' => $currentOrganization->id,
+                'name' => $currentOrganization->name,
+            ],
+            'userPermissions' => [
+                'can_create_projects' => $user->isSuperUser() || 
+                    in_array($user->getOrganizationRole($currentOrganization->id), ['org_admin', 'project_manager'])
+            ],
+            'needsOrganization' => false,
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param Request $request
-     *
-     * @return RedirectResponse|Redirector
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
+        $user = $request->user();
+        $currentOrganization = $this->contextService->getCurrentOrganization($user, $request);
+        
+        // Проверяем наличие организации
+        if (!$currentOrganization) {
+            return redirect()->route('organizations.index')
+                ->with('error', 'Сначала выберите организацию');
+        }
 
-        $requestData = $request->all();
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'status' => ['required', 'in:active,inactive,completed'],
+            'visibility' => ['required', 'in:public,private'],
+            'access_description' => ['nullable', 'string', 'max:1000'],
+        ]);
 
-        Project::create($requestData);
+        // Автоматически добавляем organization_id
+        $validated['organization_id'] = $currentOrganization->id;
 
-        return redirect('projects')->with('flash_message', 'Project added!');
-    }
+        Project::create($validated);
 
-    /**
-     * Display the specified resource.
-     *
-     * @param int $id
-     *
-     * @return View
-     */
-    public function show($id)
-    {
-        $project = Project::findOrFail($id);
-
-        return view('projects.show', compact('project'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param int $id
-     *
-     * @return View
-     */
-    public function edit($id)
-    {
-        $project = Project::findOrFail($id);
-
-        return view('projects.edit', compact('project'));
+        return redirect()->route('projects.index')
+            ->with('success', 'Проект успешно создан в организации "' . $currentOrganization->name . '"!');
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param Request $request
-     * @param int $id
-     *
-     * @return RedirectResponse|Redirector
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Project $project): RedirectResponse
     {
+        $user = $request->user();
+        
+        // Проверяем доступ к проекту
+        if (!$project->isAccessibleBy($user)) {
+            abort(403, 'У вас нет доступа к этому проекту');
+        }
 
-        $requestData = $request->all();
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'status' => ['required', 'in:active,inactive,completed'],
+            'visibility' => ['sometimes', 'in:public,private'],
+            'access_description' => ['nullable', 'string', 'max:1000'],
+        ]);
 
-        $project = Project::findOrFail($id);
-        $project->update($requestData);
+        $project->update($validated);
 
-        return redirect('projects')->with('flash_message', 'Project updated!');
+        return redirect()->route('projects.index')
+            ->with('success', 'Проект успешно обновлен!');
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param int $id
-     *
-     * @return RedirectResponse|Redirector
      */
-    public function destroy($id)
+    public function destroy(Project $project): RedirectResponse
     {
-        Project::destroy($id);
+        $user = request()->user();
+        
+        // Проверяем доступ к проекту
+        if (!$project->isAccessibleBy($user)) {
+            abort(403, 'У вас нет доступа к этому проекту');
+        }
 
-        return redirect('projects')->with('flash_message', 'Project deleted!');
+        $project->delete();
+
+        return redirect()->route('projects.index')
+            ->with('success', 'Проект успешно удален!');
     }
 }

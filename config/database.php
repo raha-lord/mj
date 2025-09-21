@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => env('DB_CONNECTION', 'pgsql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -77,6 +77,8 @@ return [
             'search_path' => 'public, tasks_management, audit',
             'sslmode' => 'prefer',
         ],
+
+
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',

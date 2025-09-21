@@ -31,7 +31,11 @@ class TaskApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $tasks = $this->taskService->getFilteredTasks($request, 25);
+        $perPage = $request->input('per_page', 25);
+        // Валидация per_page для безопасности
+        $perPage = in_array($perPage, [10, 25, 50, 100]) ? $perPage : 25;
+        
+        $tasks = $this->taskService->getFilteredTasks($request, $perPage);
         
         return response()->json([
             'success' => true,
@@ -78,7 +82,11 @@ class TaskApiController extends Controller
      */
     public function tableHtml(Request $request): JsonResponse
     {
-        $tasks = $this->taskService->getFilteredTasks($request, 25);
+        $perPage = $request->input('per_page', 25);
+        // Валидация per_page для безопасности
+        $perPage = in_array($perPage, [10, 25, 50, 100]) ? $perPage : 25;
+        
+        $tasks = $this->taskService->getFilteredTasks($request, $perPage);
         
         $html = view('tasks.partials.table', compact('tasks'))->render();
         

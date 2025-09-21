@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ant Design пагинация - ширина селектора количества записей */
+.ant-pagination-options .ant-select {
+    min-width: 80px !important;
+}
+
+.ant-pagination-options .ant-select .ant-select-selector {
+    min-width: 80px !important;
+}
+
 @layer components {
     .task-card {
         @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4;
@@ -26,4 +35,37 @@
     .priority-urgent {
         @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300;
     }
+
+    .status-badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+
+    .status-new {
+        @apply bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200;
+    }
+
+    .status-assigned {
+        @apply bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200;
+    }
+
+    .status-in_progress {
+        @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200;
+    }
+
+    .status-code_review {
+        @apply bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-200;
+    }
+
+    .status-testing {
+        @apply bg-cyan-100 text-cyan-800 dark:bg-cyan-800 dark:text-cyan-200;
+    }
+
+    .status-done {
+        @apply bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200;
+    }
+
+    .status-cancelled {
+        @apply bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200;
+    }
+
 }

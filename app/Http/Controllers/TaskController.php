@@ -11,32 +11,79 @@ use App\Models\User;
 use App\Services\TaskAssignmentService;
 use App\Services\TaskService;
 use App\Services\TimeLogService;
+use App\Services\OrganizationContextService;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class TaskController extends Controller
 {
     protected TaskService $taskService;
     protected TaskAssignmentService $assignmentService;
-
     protected TimeLogService $timeLogService;
-    public function __construct(TaskService $taskService, TaskAssignmentService $assignmentService,     TimeLogService $timeLogService)
-    {
+    protected OrganizationContextService $contextService;
+
+    public function __construct(
+        TaskService $taskService, 
+        TaskAssignmentService $assignmentService,
+        TimeLogService $timeLogService,
+        OrganizationContextService $contextService
+    ) {
         $this->taskService = $taskService;
         $this->assignmentService = $assignmentService;
         $this->timeLogService = $timeLogService;
+        $this->contextService = $contextService;
     }
 
     public function index(Request $request)
     {
-        $tasks = $this->taskService->getFilteredTasks($request, 25);
-        $filterData = $this->taskService->getFilterData();
-
-        // Если это AJAX запрос, возвращаем только HTML таблицы
-        if ($request->ajax() || $request->wantsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-            return view('tasks.partials.table', compact('tasks'))->render();
+        $user = $request->user();
+        $currentOrganization = $this->contextService->getCurrentOrganization($user, $request);
+        
+        // Если нет текущей организации, показываем пустую страницу с сообщением
+        if (!$currentOrganization) {
+            return Inertia::render('Tasks/Index', [
+                'tasks' => [],
+                'pagination' => [
+                    'current_page' => 1,
+                    'per_page' => 25,
+                    'total' => 0,
+                    'last_page' => 1
+                ],
+                'statuses' => [],
+                'projects' => [],
+                'users' => [],
+                'message' => 'Выберите организацию для просмотра задач',
+                'needsOrganization' => true,
+            ]);
         }
 
-        return view('tasks.index', array_merge(compact('tasks'), $filterData));
+        $tasks = $this->taskService->getFilteredTasks($request, 25, $currentOrganization);
+        $filterData = $this->taskService->getFilterData($currentOrganization);
+
+        return Inertia::render('Tasks/Index', [
+            'tasks' => $tasks->items(),
+            'pagination' => [
+                'current_page' => $tasks->currentPage(),
+                'per_page' => $tasks->perPage(), 
+                'total' => $tasks->total(),
+                'last_page' => $tasks->lastPage()
+            ],
+            'statuses' => $filterData['statuses'],
+            'projects' => $filterData['projects'],
+            'users' => $filterData['users'],
+            'currentOrganization' => [
+                'id' => $currentOrganization->id,
+                'name' => $currentOrganization->name,
+            ],
+            'needsOrganization' => false,
+        ]);
+    }
+
+    public function indexVue(Request $request)
+    {
+        $filterData = $this->taskService->getFilterData();
+
+        return view('tasks.index-vue', $filterData);
     }
 
     public function create()

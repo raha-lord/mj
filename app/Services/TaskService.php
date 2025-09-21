@@ -6,14 +6,22 @@ namespace App\Services;
 use App\Http\Filters\TaskFilter;
 use App\Models\Task;
 use App\Models\TaskSize;
+use App\Models\Organization;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class TaskService
 {
-    public function getFilteredTasks(Request $request, int $perPage = 25): LengthAwarePaginator
+    public function getFilteredTasks(Request $request, int $perPage = 25, ?Organization $organization = null): LengthAwarePaginator
     {
         $query = Task::with(['status', 'project', 'size', 'assignees']);
+
+        // Фильтруем задачи по организации через проекты
+        if ($organization) {
+            $query->whereHas('project', function ($q) use ($organization) {
+                $q->where('organization_id', $organization->id);
+            });
+        }
 
         $filter = new TaskFilter($request);
         $query = $filter->apply($query);
@@ -98,13 +106,27 @@ class TaskService
     /**
      * Получить данные для фильтров
      */
-    public function getFilterData(): array
+    public function getFilterData(?Organization $organization = null): array
     {
+        // Проекты фильтруем по организации
+        $projectsQuery = \App\Models\Project::orderBy('name');
+        if ($organization) {
+            $projectsQuery->where('organization_id', $organization->id);
+        }
+
+        // Пользователи фильтруем по организации
+        $usersQuery = \App\Models\User::orderBy('name');
+        if ($organization) {
+            $usersQuery->whereHas('organizations', function ($q) use ($organization) {
+                $q->where('organization_id', $organization->id);
+            });
+        }
+
         return [
             'statuses' => \App\Models\Status::ordered()->get(['id', 'slug', 'name']),
-            'projects' => \App\Models\Project::orderBy('name')->get(['id', 'name']),
+            'projects' => $projectsQuery->get(['id', 'name']),
             'sizes' => \App\Models\TaskSize::active()->ordered()->get(['id', 'code', 'name']),
-            'users' => \App\Models\User::orderBy('name')->get(['id', 'name']),
+            'users' => $usersQuery->get(['id', 'name']),
             'priorities' => [
                 'low' => __('ui.priority.low'),
                 'normal' => __('ui.priority.normal'),

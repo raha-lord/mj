@@ -1,0 +1,44 @@
+/* Фиолетовая тема для Ant Design */
+.ant-btn-primary {
+  background-color: #722ed1 !important;
+  border-color: #722ed1 !important;
+  color: white !important;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus,
+.ant-btn-primary:active {
+  background-color: #9254de !important;
+  border-color: #9254de !important;
+  color: white !important;
+}
+
+.ant-input:focus,
+.ant-input-focused {
+  border-color: #9254de !important;
+  box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.2) !important;
+}
+
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-color: #9254de !important;
+}
+
+.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  border-color: #9254de !important;
+  box-shadow: 0 0 0 2px rgba(114, 46, 209, 0.2) !important;
+}
+
+.ant-table-thead > tr > th {
+  background-color: #f9f0ff !important;
+}
+
+.ant-table-tbody > tr > td:hover {
+  background: rgba(114, 46, 209, 0.05) !important;
+}
+
+/* Переменные для кастомных компонентов */
+:root {
+  --primary-color: #722ed1;
+  --primary-hover: #9254de;
+  --primary-light: #f9f0ff;
+}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест темной и светлой темы</title>
+    <link rel="stylesheet" href="/css/themes/light.css" id="theme-css">
+    <style>
+        body {
+            margin: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: all 0.3s ease;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-primary);
+        }
+        .test-button {
+            background: var(--primary-color);
+            color: var(--text-inverse);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .test-button:hover {
+            background: var(--primary-hover);
+        }
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: var(--text-inverse);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Переключить тему</button>
+    
+    <div class="test-container">
+        <h1 style="color: var(--text-primary);">Тест системы тем MJ</h1>
+        
+        <p style="color: var(--text-secondary);">
+            Этот файл тестирует новую систему светлой и темной темы. 
+            Нажмите кнопку в правом верхнем углу для переключения.
+        </p>
+        
+        <div style="background: var(--bg-secondary); padding: 15px; margin: 20px 0; border-radius: 6px;">
+            <h3 style="color: var(--text-primary);">Элементы интерфейса:</h3>
+            <button class="test-button">Основная кнопка</button>
+            <button class="test-button" style="background: var(--success-color);">Кнопка успеха</button>
+            <button class="test-button" style="background: var(--warning-color);">Предупреждение</button>
+            <button class="test-button" style="background: var(--error-color);">Ошибка</button>
+        </div>
+        
+        <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 6px; margin: 20px 0;">
+            <h4 style="color: var(--text-primary);">Таблица (имитация):</h4>
+            <div style="border: 1px solid var(--border-color); border-radius: 4px; overflow: hidden;">
+                <div style="background: var(--bg-tertiary); padding: 10px; border-bottom: 1px solid var(--border-color); color: var(--text-primary); font-weight: 600;">
+                    Заголовок таблицы
+                </div>
+                <div style="background: var(--bg-primary); padding: 10px; border-bottom: 1px solid var(--border-color); color: var(--text-primary);">
+                    Строка данных 1
+                </div>
+                <div style="background: var(--bg-primary); padding: 10px; color: var(--text-primary);">
+                    Строка данных 2
+                </div>
+            </div>
+        </div>
+        
+        <div style="padding: 15px; background: var(--bg-elevated); border-radius: 6px; box-shadow: var(--shadow-sm);">
+            <h4 style="color: var(--text-primary);">Карточка (elevated background)</h4>
+            <p style="color: var(--text-secondary);">
+                Этот блок имеет повышенный фон и тень, как модальные окна и дропдауны.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let currentTheme = 'light';
+        
+        function toggleTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            const themeLink = document.getElementById('theme-css');
+            themeLink.href = `/css/themes/${currentTheme}.css`;
+            
+            document.body.setAttribute('data-theme', currentTheme);
+            
+            if (currentTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.body.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.body.classList.remove('dark');
+            }
+            
+            const button = document.querySelector('.theme-toggle');
+            button.innerHTML = currentTheme === 'light' ? '🌙 Переключить тему' : '☀️ Переключить тему';
+            
+            console.log('Theme changed to:', currentTheme);
+        }
+    </script>
+</body>
+</html>

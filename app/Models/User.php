@@ -24,6 +24,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_super_user',
+        'password_set_at',
     ];
 
     /**
@@ -50,6 +52,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_super_user' => 'boolean',
+            'password_set_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];
     }
@@ -85,9 +89,9 @@ class User extends Authenticatable
     // Отношения к задачам
     public function tasks(): BelongsToMany
     {
-        return $this->belongsToMany(Task::class, 'tasks_management.task_user')
+        return $this->belongsToMany(Task::class, 'task_user')
             ->withPivot(['role', 'assigned_at', 'completed_at', 'notes'])
-            ->whereNull('tasks_management.task_user.deleted_at')
+            ->whereNull('task_user.deleted_at')
             ->withTimestamps();
     }
 
@@ -123,6 +127,25 @@ class User extends Authenticatable
         return $this->hasMany(Project::class, 'created_by');
     }
 
+    // Проекты где пользователь является участником
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class, 'project_user')
+            ->withPivot(['role', 'joined_at'])
+            ->whereNull('project_user.deleted_at')
+            ->withTimestamps();
+    }
+
+    public function managedProjects(): BelongsToMany
+    {
+        return $this->projects()->wherePivot('role', 'manager');
+    }
+
+    public function memberProjects(): BelongsToMany
+    {
+        return $this->projects()->wherePivot('role', 'member');
+    }
+
     // История активности
     public function taskHistory(): HasMany
     {
@@ -140,9 +163,9 @@ class User extends Authenticatable
     public function getActiveTasks()
     {
         return $this->assignedTasks()
-            ->whereNull('tasks_management.tasks.deleted_at')
-            ->whereNull('tasks_management.tasks.completed_date')
-            ->whereHas('statuses', function ($q) {
+            ->whereNull('tasks.deleted_at')
+            ->whereNull('tasks.completed_date')
+            ->whereHas('status', function ($q) {
                 $q->where('is_final', false);
             });
     }
@@ -153,9 +176,9 @@ class User extends Authenticatable
     public function getOverdueTasks()
     {
         return $this->assignedTasks()
-            ->whereNull('tasks_management.tasks.deleted_at')
-            ->whereNull('tasks_management.tasks.completed_date')
-            ->where('tasks_management.tasks.due_date', '<', now());
+            ->whereNull('tasks.deleted_at')
+            ->whereNull('tasks.completed_date')
+            ->where('tasks.due_date', '<', now());
     }
 
     /**
@@ -167,15 +190,93 @@ class User extends Authenticatable
             'total' => $this->assignedTasks()->count(),
             'active' => $this->getActiveTasks()->count(),
             'completed' => $this->assignedTasks()
-                ->whereNotNull('tasks_management.tasks.completed_date')
+                ->whereNotNull('tasks.completed_date')
                 ->count(),
             'overdue' => $this->getOverdueTasks()->count(),
         ];
+    }
+
+    // Отношения к организациям
+    public function organizations(): BelongsToMany
+    {
+        return $this->belongsToMany(Organization::class, 'organization_user')
+            ->withPivot(['role', 'joined_at', 'notes'])
+            ->whereNull('organization_user.deleted_at')
+            ->withTimestamps();
+    }
+
+    public function ownedOrganizations(): BelongsToMany
+    {
+        return $this->organizations()->wherePivot('role', 'org_admin');
+    }
+
+    public function managedOrganizations(): BelongsToMany
+    {
+        return $this->organizations()->wherePivotIn('role', ['org_admin', 'project_manager']);
     }
 
     // Scopes
     public function scopeActive($query)
     {
         return $query->whereNull('deleted_at');
+    }
+
+    public function scopeSuperUsers($query)
+    {
+        return $query->where('is_super_user', true);
+    }
+
+    public function scopeInOrganization($query, $organizationId)
+    {
+        return $query->whereHas('organizations', function ($q) use ($organizationId) {
+            $q->where('organization_id', $organizationId);
+        });
+    }
+
+    // Вспомогательные методы для организаций
+    public function isSuperUser(): bool
+    {
+        return $this->is_super_user;
+    }
+
+    public function hasPassword(): bool
+    {
+        // Проверяем наличие хеша пароля, а не только password_set_at
+        return !empty($this->password);
+    }
+
+    public function belongsToOrganization($organizationId): bool
+    {
+        return $this->organizations()->where('organization_id', $organizationId)->exists();
+    }
+
+    public function getOrganizationRole($organizationId): ?string
+    {
+        $org = $this->organizations()->where('organization_id', $organizationId)->first();
+        return $org?->pivot?->role;
+    }
+
+    public function isOrgAdmin($organizationId): bool
+    {
+        return $this->getOrganizationRole($organizationId) === 'org_admin';
+    }
+
+    public function isProjectManager($organizationId): bool
+    {
+        return in_array($this->getOrganizationRole($organizationId), ['org_admin', 'project_manager']);
+    }
+
+    public function canAccessOrganization($organizationId): bool
+    {
+        return $this->isSuperUser() || $this->belongsToOrganization($organizationId);
+    }
+
+    public function getAccessibleOrganizations()
+    {
+        if ($this->isSuperUser()) {
+            return Organization::active()->get();
+        }
+        
+        return $this->organizations()->active()->get();
     }
 }

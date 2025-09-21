@@ -1,0 +1,199 @@
+# 📚 Архитектурные принципы Frontend разработки (от джуна к сеньору)
+
+## 1. **Принцип единственной ответственности (SRP)**
+
+### ❌ Плохо (общий loading для всего):
+```javascript
+const { loading, getTask, getTasks } = useTasks()
+// loading используется и для списка, и для модалки
+```
+
+### ✅ Хорошо (отдельные loading состояния):
+```javascript
+// Каждое действие имеет свой loading
+const tasksLoading = ref(false)      // только для списка
+const modalLoading = ref(false)      // только для модалки
+const createLoading = ref(false)     // только для создания
+```
+
+**Принцип**: Одна функция/переменная = одна ответственность
+
+---
+
+## 2. **Разделение состояний (State Separation)**
+
+### Правило: Разные UI компоненты = разные состояния
+
+```javascript
+// composables/useTasksList.js
+export function useTasksList() {
+  const loading = ref(false)
+  const tasks = ref([])
+  const filters = reactive({})
+
+  return { loading, tasks, filters, getTasks, applyFilters }
+}
+
+// composables/useTaskModal.js
+export function useTaskModal() {
+  const loading = ref(false)
+  const task = ref(null)
+
+  return { loading, task, getTask, updateTask }
+}
+```
+
+**Принцип**: Изоляция состояний предотвращает неожиданные побочные эффекты
+
+---
+
+## 3. **Композиция vs Наследование**
+
+### ✅ Хорошая композиция:
+```javascript
+// В компоненте
+const list = useTasksList()
+const modal = useTaskModal()
+const notifications = useNotifications()
+
+// Каждый composable отвечает за свою область
+```
+
+**Принцип**: Собирай сложную логику из простых блоков
+
+---
+
+## 4. **Слоистая архитектура (Layered Architecture)**
+
+```
+API Layer       → utils/api.js, composables/api/
+Business Logic  → composables/features/
+UI Logic        → composables/ui/
+Components      → components/
+```
+
+**Принцип**: Четкое разделение ответственности по слоям
+
+---
+
+## 5. **Инверсия зависимостей (Dependency Inversion)**
+
+### ❌ Плохо (жесткая связь):
+```javascript
+// Компонент напрямую зависит от конкретного API
+const response = await fetch('/api/tasks')
+```
+
+### ✅ Хорошо (абстракция):
+```javascript
+// Компонент зависит от абстракции
+const { getTasks } = useTasks()
+const tasks = await getTasks()
+```
+
+**Принцип**: Зависи от абстракций, а не от конкретных реализаций
+
+---
+
+## 6. **Принцип открытости/закрытости (Open/Closed)**
+
+```javascript
+// Базовый composable закрыт для изменений
+export function useApi() {
+  // stable API
+}
+
+// Но открыт для расширения
+export function useTasks() {
+  const api = useApi()
+  // расширяем функциональность
+}
+```
+
+**Принцип**: Код должен быть открыт для расширения, но закрыт для изменения
+
+---
+
+## 7. **Не повторяйся (DRY) vs Не связывайся преждевременно**
+
+### Баланс между переиспользованием и гибкостью:
+
+```javascript
+// Общая логика
+export function useModal() {
+  const isOpen = ref(false)
+  const open = () => isOpen.value = true
+  const close = () => isOpen.value = false
+  return { isOpen, open, close }
+}
+
+// Специфичная логика
+export function useTaskModal() {
+  const modal = useModal()
+  const task = ref(null)
+  // специфичная для задач логика
+  return { ...modal, task }
+}
+```
+
+---
+
+## 8. **Явное лучше неявного (Explicit is better than implicit)**
+
+### ❌ Плохо (магия):
+```javascript
+// Непонятно, что обновляет список
+const updateTask = async (data) => {
+  await api.updateTask(data)
+  // магическое обновление списка где-то внутри
+}
+```
+
+### ✅ Хорошо (явно):
+```javascript
+const updateTask = async (data) => {
+  await api.updateTask(data)
+  await refreshTasksList() // явно обновляем список
+}
+```
+
+---
+
+## 9. **Fail Fast (Быстрый отказ)**
+
+```javascript
+export function useTask(taskId) {
+  if (!taskId) {
+    throw new Error('taskId обязателен')
+  }
+
+  // остальная логика
+}
+```
+
+**Принцип**: Ошибки должны проявляться как можно раньше
+
+---
+
+## 10. **Принцип минимального удивления**
+
+```javascript
+// Функция делает именно то, что ожидается по названию
+const getUserTasks = () => { /* возвращает задачи пользователя */ }
+
+// НЕ делает неожиданных вещей:
+// - НЕ обновляет UI
+// - НЕ отправляет уведомления
+// - НЕ изменяет глобальное состояние
+```
+
+---
+
+## Практические правила для ежедневной работы:
+
+1. **Один файл = одна ответственность**
+2. **Если функция больше 20 строк - разбей**
+3. **Если composable возвращает больше 5 вещей - разбей**
+4. **Явные зависимости лучше неявных**
+5. **Тестируемый код = хорошая архитектура**
+6. **Если сложно объяснить - значит сложно спроектировано**

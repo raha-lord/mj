@@ -1,0 +1,490 @@
+/* Темная тема для всего интерфейса */
+:root {
+  /* Основные цвета */
+  --bg-primary: #1f1f1f;
+  --bg-secondary: #141414;
+  --bg-tertiary: #262626;
+  --bg-elevated: #262626;
+  
+  /* Текст */
+  --text-primary: #ffffffd9;
+  --text-secondary: #ffffff73;
+  --text-disabled: #ffffff40;
+  --text-inverse: #000000d9;
+  
+  /* Границы */
+  --border-color: #434343;
+  --border-hover: #177ddc;
+  --border-focus: #1890ff;
+  
+  /* Основной цвет (Ant Design Blue) */
+  --primary-color: #1890ff;
+  --primary-hover: #40a9ff;
+  --primary-active: #096dd9;
+  --primary-light: #111b26;
+  --primary-lightest: #0c1419;
+  
+  /* Успех */
+  --success-color: #52c41a;
+  --success-hover: #73d13d;
+  --success-light: #162312;
+  
+  /* Предупреждение */
+  --warning-color: #faad14;
+  --warning-hover: #ffc53d;
+  --warning-light: #2b2111;
+  
+  /* Ошибка */
+  --error-color: #ff4d4f;
+  --error-hover: #ff7875;
+  --error-light: #2a1215;
+  
+  /* Тени */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.16), 0 1px 6px -1px rgba(0, 0, 0, 0.12), 0 2px 4px 0 rgba(0, 0, 0, 0.09);
+  --shadow-md: 0 6px 16px 0 rgba(0, 0, 0, 0.32), 0 3px 6px -4px rgba(0, 0, 0, 0.48), 0 9px 28px 8px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 32px 4px rgba(0, 0, 0, 0.36), 0 8px 20px 0 rgba(0, 0, 0, 0.32);
+}
+
+/* Основные элементы интерфейса */
+body {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Header */
+.ant-layout-header {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* Sidebar/Menu */
+.ant-layout-sider {
+  background: var(--bg-primary) !important;
+}
+
+.ant-menu {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.ant-menu-item {
+  color: var(--text-primary) !important;
+}
+
+.ant-menu-item:hover {
+  background: var(--primary-lightest) !important;
+  color: var(--primary-color) !important;
+}
+
+.ant-menu-item-selected {
+  background: var(--primary-light) !important;
+  color: var(--primary-color) !important;
+}
+
+/* Content area */
+.ant-layout-content {
+  background: var(--bg-secondary) !important;
+}
+
+/* Cards */
+.ant-card {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.ant-card-head {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+/* Tables */
+.ant-table {
+  background: var(--bg-primary) !important;
+}
+
+.ant-table-thead > tr > th {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.ant-table-tbody > tr > td {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: var(--primary-lightest) !important;
+}
+
+/* Forms */
+/* Forms */
+.ant-input,
+.ant-input-affix-wrapper {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important; /* Исправлена ошибка */
+  border: 1px solid var(--border-color) !important; /* Исправлена толщина границы */
+}
+
+.ant-input-affix-wrapper > input.ant-input {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-primary) !important;
+}
+
+.ant-input-affix-wrapper .ant-input-prefix,
+.ant-input-affix-wrapper .ant-input-suffix {
+  color: var(--text-secondary) !important;
+}
+
+.ant-input::placeholder {
+  color: var(--text-secondary) !important; /* Цвет placeholder'а */
+  opacity: 1 !important;
+}
+
+.ant-input::-webkit-input-placeholder {
+  color: var(--text-secondary) !important;
+}
+
+.ant-input::-moz-placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 1 !important;
+}
+
+.ant-input:-ms-input-placeholder {
+  color: var(--text-secondary) !important;
+}
+
+.ant-input:hover {
+  border-color: var(--border-hover) !important;
+}
+
+.ant-input:focus,
+.ant-input-focused {
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+/* Также для селектов */
+.ant-select .ant-select-selector {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.ant-select .ant-select-selection-placeholder {
+  color: var(--text-secondary) !important;
+}
+
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-color: var(--border-hover) !important;
+}
+
+.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+}
+
+
+/* Dropdown menus */
+.ant-select-dropdown {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.ant-select-item {
+  color: var(--text-primary) !important;
+}
+
+.ant-select-item:hover {
+  background: var(--primary-lightest) !important;
+}
+
+.ant-select-item-option-selected {
+  background: var(--primary-light) !important;
+  color: var(--primary-color) !important;
+}
+
+/* Buttons */
+.ant-btn {
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.ant-btn-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--text-inverse) !important;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  color: var(--text-inverse) !important;
+}
+
+.ant-btn-default {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}
+
+.ant-btn-default:hover {
+  background: var(--bg-primary) !important;
+  border-color: var(--border-hover) !important;
+  color: var(--primary-color) !important;
+}
+
+/* Modals */
+.ant-modal-content {
+  background: var(--bg-elevated) !important;
+}
+
+.ant-modal-header {
+  background: var(--bg-elevated) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.ant-modal-title {
+  color: var(--text-primary) !important;
+}
+
+.ant-modal-body {
+  color: var(--text-primary) !important;
+}
+
+.ant-modal-footer {
+  background: var(--bg-elevated) !important;
+  border-top: 1px solid var(--border-color) !important;
+}
+
+/* Dropdowns */
+.ant-dropdown-menu {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.ant-dropdown-menu-item {
+  color: var(--text-primary) !important;
+}
+
+.ant-dropdown-menu-item:hover {
+  background: var(--primary-lightest) !important;
+}
+
+/* Pagination */
+.ant-pagination .ant-pagination-item {
+  background: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.ant-pagination .ant-pagination-item a {
+  color: var(--text-primary) !important;
+}
+
+.ant-pagination .ant-pagination-item:hover {
+  border-color: var(--border-hover) !important;
+}
+
+.ant-pagination .ant-pagination-item-active {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.ant-pagination .ant-pagination-item-active a {
+  color: var(--text-inverse) !important;
+}
+
+/* Notifications */
+.ant-notification {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.ant-notification-notice-message {
+  color: var(--text-primary) !important;
+}
+
+.ant-notification-notice-description {
+  color: var(--text-secondary) !important;
+}
+
+/* Tooltips */
+.ant-tooltip-inner {
+  background: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Form labels */
+.ant-form-item-label > label {
+  color: var(--text-primary) !important;
+}
+/* Breadcrumb стили для темной темы */
+.ant-breadcrumb {
+  color: var(--text-primary) !important;
+}
+
+.ant-breadcrumb .ant-breadcrumb-separator {
+  color: var(--text-secondary) !important;
+}
+
+.breadcrumb-link {
+  color: var(--text-secondary) !important;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+  color: var(--primary-color) !important;
+}
+
+.breadcrumb-current {
+  color: var(--text-primary) !important;
+  font-weight: 500;
+}
+/* Pagination - стили для темной темы */
+.ant-pagination {
+  color: var(--text-primary) !important;
+}
+
+/* Номера страниц */
+.ant-pagination .ant-pagination-item {
+  background: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.ant-pagination .ant-pagination-item a {
+  color: var(--text-primary) !important;
+}
+
+.ant-pagination .ant-pagination-item:hover {
+  border-color: var(--border-hover) !important;
+}
+
+.ant-pagination .ant-pagination-item:hover a {
+  color: var(--primary-color) !important;
+}
+
+/* Активная страница */
+.ant-pagination .ant-pagination-item-active {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.ant-pagination .ant-pagination-item-active a {
+  color: var(--text-inverse) !important;
+}
+
+/* Кнопки "Предыдущая/Следующая" */
+.ant-pagination .ant-pagination-prev,
+.ant-pagination .ant-pagination-next {
+  color: var(--text-primary) !important;
+}
+
+.ant-pagination .ant-pagination-prev:hover,
+.ant-pagination .ant-pagination-next:hover {
+  color: var(--primary-color) !important;
+}
+
+.ant-pagination .ant-pagination-prev.ant-pagination-disabled,
+.ant-pagination .ant-pagination-next.ant-pagination-disabled {
+  color: var(--text-disabled) !important;
+}
+
+/* SVG иконки в кнопках пагинации */
+.ant-pagination .ant-pagination-prev .anticon,
+.ant-pagination .ant-pagination-next .anticon {
+  color: var(--text-primary) !important;
+}
+
+.ant-pagination .ant-pagination-prev:hover .anticon,
+.ant-pagination .ant-pagination-next:hover .anticon {
+  color: var(--primary-color) !important;
+}
+
+.ant-pagination .ant-pagination-prev.ant-pagination-disabled .anticon,
+.ant-pagination .ant-pagination-next.ant-pagination-disabled .anticon {
+  color: var(--text-disabled) !important;
+}
+
+/* SVG внутри иконок */
+.ant-pagination .ant-pagination-prev .anticon svg,
+.ant-pagination .ant-pagination-next .anticon svg {
+  fill: currentColor !important;
+}
+
+/* Джампер стрелки (двойные стрелки) */
+.ant-pagination .ant-pagination-jump-prev .anticon,
+.ant-pagination .ant-pagination-jump-next .anticon {
+  color: var(--text-secondary) !important;
+}
+
+.ant-pagination .ant-pagination-jump-prev:hover .anticon,
+.ant-pagination .ant-pagination-jump-next:hover .anticon {
+  color: var(--primary-color) !important;
+}
+
+/* Опции пагинации */
+.ant-pagination .ant-pagination-options {
+  color: var(--text-primary) !important;
+}
+
+.ant-pagination .ant-pagination-options .ant-pagination-options-size-changer {
+  color: var(--text-primary) !important;
+}
+
+/* Информация о количестве */
+.ant-pagination .ant-pagination-total-text {
+  color: var(--text-secondary) !important;
+}
+
+/* Селектор размера страницы */
+.ant-pagination .ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+  border-color: var(--border-hover) !important;
+}
+
+.ant-pagination .ant-select .ant-select-selector {
+  background: var(--bg-tertiary) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Многоточие между страницами */
+.ant-pagination .ant-pagination-item-ellipsis {
+  color: var(--text-secondary) !important;
+}
+
+/* Джампер (переход к странице) */
+.ant-pagination .ant-pagination-jump-prev,
+.ant-pagination .ant-pagination-jump-next {
+  color: var(--text-secondary) !important;
+}
+
+.ant-pagination .ant-pagination-jump-prev:hover,
+.ant-pagination .ant-pagination-jump-next:hover {
+  color: var(--primary-color) !important;
+}
+/* Scrollbars для темной темы */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
