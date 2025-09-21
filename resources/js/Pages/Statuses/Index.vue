@@ -134,7 +134,7 @@
 import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AppLayout from '../../Layouts/AppLayout.vue'
-import StatusModal from '../../Components/StatusModal.vue'
+import StatusModal from '../../Components/UI/StatusModal.vue'
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons-vue'
 
 // Props from controller

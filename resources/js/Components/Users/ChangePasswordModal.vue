@@ -90,7 +90,7 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3'
 import { LockOutlined } from '@ant-design/icons-vue'
-import { useFormErrors } from '../composables/ui/useFormErrors.js'
+import { useFormErrors } from '../../composables/ui/useFormErrors.js'
 
 // Props
 const props = defineProps({

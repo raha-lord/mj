@@ -169,7 +169,7 @@
 import { ref, h } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AppLayout from '../../Layouts/AppLayout.vue'
-import ChangePasswordModal from '../../Components/ChangePasswordModal.vue'
+import ChangePasswordModal from '../../Components/Users/ChangePasswordModal.vue'
 import {
   UserOutlined,
   MailOutlined,

@@ -161,8 +161,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AppLayout from '../../Layouts/AppLayout.vue'
-import TaskModal from '../../Components/TaskModal.vue'
-import DeleteConfirmModal from '../../Components/DeleteConfirmModal.vue'
+import TaskModal from '../../Components/Tasks/TaskModal.vue'
+import DeleteConfirmModal from '../../Components/UI/DeleteConfirmModal.vue'
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons-vue'
 
 // Props from controller

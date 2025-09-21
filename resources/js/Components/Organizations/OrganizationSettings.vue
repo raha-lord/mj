@@ -257,7 +257,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { router } from '@inertiajs/vue3'
 import { Modal, message } from 'ant-design-vue'
-import { useUserPermissions } from '../composables/organizations/useUserPermissions'
+import { useUserPermissions } from '../../composables/organizations/useUserPermissions.js'
 
 // Пропсы
 const props = defineProps({

@@ -167,7 +167,7 @@
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
 import { message } from 'ant-design-vue'
-import { useUserPermissions } from '../composables/organizations/useUserPermissions'
+import { useUserPermissions } from '../../composables/organizations/useUserPermissions.js'
 
 // Пропсы
 const props = defineProps({

@@ -148,9 +148,9 @@ import {
   SettingOutlined,
   SwapOutlined
 } from '@ant-design/icons-vue'
-import { useOrganizations } from '../composables/organizations/useOrganizations'
-import { useOrganizationContext } from '../composables/organizations/useOrganizationContext'
-import { useUserPermissions } from '../composables/organizations/useUserPermissions'
+import { useOrganizations } from '../../composables/organizations/useOrganizations.js'
+import { useOrganizationContext } from '../../composables/organizations/useOrganizationContext.js'
+import { useUserPermissions } from '../../composables/organizations/useUserPermissions.js'
 import { message } from 'ant-design-vue'
 import OrganizationForm from './OrganizationForm.vue'
 

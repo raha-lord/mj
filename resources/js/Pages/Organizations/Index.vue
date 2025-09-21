@@ -325,7 +325,7 @@ import {
 } from '@ant-design/icons-vue'
 import { Modal, message } from 'ant-design-vue'
 import AppLayout from '../../Layouts/AppLayout.vue'
-import OrganizationForm from '../../Components/OrganizationForm.vue'
+import OrganizationForm from '../../Components/Organizations/OrganizationForm.vue'
 import { useOrganizations } from '../../composables/organizations/useOrganizations'
 import { useOrganizationContext } from '../../composables/organizations/useOrganizationContext'
 import { useUserPermissions } from '../../composables/organizations/useUserPermissions'

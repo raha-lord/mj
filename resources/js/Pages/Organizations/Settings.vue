@@ -234,9 +234,9 @@ import {
 } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import AppLayout from '../../Layouts/AppLayout.vue'
-import MembersList from '../../Components/MembersList.vue'
-import OrganizationSettings from '../../Components/OrganizationSettings.vue'
-import InviteUserForm from '../../Components/InviteUserForm.vue'
+import MembersList from '../../Components/Users/MembersList.vue'
+import OrganizationSettings from '../../Components/Organizations/OrganizationSettings.vue'
+import InviteUserForm from '../../Components/Users/InviteUserForm.vue'
 import { useOrganizationContext } from '../../composables/organizations/useOrganizationContext'
 
 // Временные компоненты для разделов, которые будут реализованы позже

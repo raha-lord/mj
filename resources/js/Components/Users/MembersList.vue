@@ -227,7 +227,7 @@ import {
   DeleteOutlined
 } from '@ant-design/icons-vue'
 import { Modal, message } from 'ant-design-vue'
-import { useUserPermissions } from '../composables/organizations/useUserPermissions'
+import { useUserPermissions } from '../../composables/organizations/useUserPermissions.js'
 import UserRoleSelector from './UserRoleSelector.vue'
 import InviteUserForm from './InviteUserForm.vue'
 
