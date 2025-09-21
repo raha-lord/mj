@@ -38,7 +38,7 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { useForm } from '@inertiajs/vue3'
-import { useFormErrors } from '../composables/ui/useFormErrors.js'
+import { useFormErrors } from '../../composables/ui/useFormErrors.js'
 import ProjectForm from './ProjectForm.vue'
 
 // Props

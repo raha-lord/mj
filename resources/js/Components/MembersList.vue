@@ -1,12 +1,9 @@
 <template>
-  <div class="members-list">
+  <div class="members-list p-6">
     <!-- Заголовок и действия -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h3 class="text-xl font-semibold text-gray-900">Участники организации</h3>
-        <p class="text-gray-600 mt-1">
-          Управляйте участниками и их ролями в организации
-        </p>
+        <h3 class="text-xl font-semibold text-gray-900">Выберете участников</h3>
       </div>
       <a-button
         v-if="canInviteMembers"

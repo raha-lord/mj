@@ -214,7 +214,7 @@
 import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AppLayout from '../../Layouts/AppLayout.vue'
-import ProjectModal from '../../Components/ProjectModal.vue'
+import ProjectModal from '../../Components/Projects/ProjectModal.vue'
 import { 
   PlusOutlined, 
   SearchOutlined, 
