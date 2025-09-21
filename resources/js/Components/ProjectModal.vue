@@ -2,26 +2,11 @@
   <a-modal
     :open="isOpen"
     :title="modalTitle"
-    width="600px"
+    width="800px"
     :destroy-on-close="true"
     @cancel="closeModal"
+    :footer="null"
   >
-    <template #footer>
-      <a-space>
-        <a-button @click="closeModal">
-          Отмена
-        </a-button>
-        <a-button 
-          v-if="mode !== 'view'"
-          type="primary" 
-          :loading="form.processing"
-          @click="handleSubmit"
-        >
-          {{ submitButtonText }}
-        </a-button>
-      </a-space>
-    </template>
-
     <!-- Loading State -->
     <div v-if="loading" class="text-center py-8">
       <a-spin size="large" />
@@ -29,65 +14,24 @@
     </div>
 
     <!-- Project Form -->
-    <a-form
+    <ProjectForm
       v-else
-      :model="form"
-      layout="vertical"
-      :disabled="form.processing || mode === 'view'"
-    >
-      <!-- Name Field -->
-      <a-form-item 
-        label="Название проекта"
-        v-bind="getFieldError('name')"
-      >
-        <a-input
-          v-model:value="form.name"
-          placeholder="Введите название проекта"
-          :disabled="mode === 'view'"
-          @input="clearFieldError('name')"
-        />
-      </a-form-item>
+      :project="project"
+      :loading="form.processing"
+      :can-manage-members="canManageMembers"
+      :mode="mode"
+      @submit="handleSubmit"
+      @cancel="closeModal"
+    />
 
-      <!-- Description Field -->
-      <a-form-item 
-        label="Описание"
-        v-bind="getFieldError('description')"
-      >
-        <a-textarea
-          v-model:value="form.description"
-          placeholder="Описание проекта"
-          :rows="4"
-          :disabled="mode === 'view'"
-          @input="clearFieldError('description')"
-        />
-      </a-form-item>
-
-      <!-- Status Field -->
-      <a-form-item 
-        label="Статус"
-        v-bind="getFieldError('status')"
-      >
-        <a-select
-          v-model:value="form.status"
-          placeholder="Выберите статус"
-          :disabled="mode === 'view'"
-          @change="clearFieldError('status')"
-        >
-          <a-select-option value="active">Активный</a-select-option>
-          <a-select-option value="inactive">Неактивный</a-select-option>
-          <a-select-option value="completed">Завершен</a-select-option>
-        </a-select>
-      </a-form-item>
-
-      <!-- Global Form Error -->
-      <a-alert
-        v-if="hasErrors && !form.processing"
-        :message="getFirstError"
-        type="error"
-        show-icon
-        class="mb-4"
-      />
-    </a-form>
+    <!-- Global Form Error -->
+    <a-alert
+      v-if="hasErrors && !form.processing"
+      :message="getFirstError"
+      type="error"
+      show-icon
+      class="mt-4"
+    />
   </a-modal>
 </template>
 
@@ -95,6 +39,7 @@
 import { computed, watch } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import { useFormErrors } from '../composables/ui/useFormErrors.js'
+import ProjectForm from './ProjectForm.vue'
 
 // Props
 const props = defineProps({
@@ -120,11 +65,12 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['close', 'submit'])
 
-// Form setup
+// Form setup  
 const form = useForm({
-  name: '',
-  description: '',
-  status: 'active'
+  name: props.project?.name || '',
+  description: props.project?.description || '',
+  status: props.project?.status || 'active',
+  visibility: props.project?.visibility || 'public'
 })
 
 // Error handling
@@ -140,23 +86,11 @@ const modalTitle = computed(() => {
   return titles[props.mode] || 'Проект'
 })
 
-const submitButtonText = computed(() => {
-  return props.mode === 'create' ? 'Создать' : 'Сохранить'
+const canManageMembers = computed(() => {
+  // Можно управлять участниками если пользователь админ организации
+  // TODO: получать это из контекста пользователя
+  return true
 })
-
-// Watch project changes to populate form
-watch(() => props.project, (newProject) => {
-  if (newProject && props.mode !== 'create') {
-    // Populate form with project data
-    form.name = newProject.name || ''
-    form.description = newProject.description || ''
-    form.status = newProject.status || 'active'
-  } else if (props.mode === 'create') {
-    // Reset form for creation
-    form.reset()
-    form.status = 'active'
-  }
-}, { immediate: true })
 
 // Methods
 const closeModal = () => {
@@ -165,7 +99,19 @@ const closeModal = () => {
   emit('close')
 }
 
-const handleSubmit = () => {
+const handleSubmit = (formData) => {
+  // В режиме просмотра не выполняем submit
+  if (props.mode === 'view') {
+    return
+  }
+
+  // Обновляем форму данными из ProjectForm
+  Object.keys(formData).forEach(key => {
+    if (form.hasOwnProperty(key)) {
+      form[key] = formData[key]
+    }
+  })
+
   const url = props.mode === 'create' ? '/projects' : `/projects/${props.project.id}`
   const method = props.mode === 'create' ? 'post' : 'put'
 
@@ -179,4 +125,14 @@ const handleSubmit = () => {
     }
   })
 }
+
+// Обновляем форму при изменении проекта
+watch(() => props.project, (newProject) => {
+  if (newProject) {
+    form.name = newProject.name || ''
+    form.description = newProject.description || ''
+    form.status = newProject.status || 'active'
+    form.visibility = newProject.visibility || 'public'
+  }
+}, { immediate: true, deep: true })
 </script>

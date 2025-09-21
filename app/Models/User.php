@@ -127,6 +127,25 @@ class User extends Authenticatable
         return $this->hasMany(Project::class, 'created_by');
     }
 
+    // Проекты где пользователь является участником
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class, 'project_user')
+            ->withPivot(['role', 'joined_at'])
+            ->whereNull('project_user.deleted_at')
+            ->withTimestamps();
+    }
+
+    public function managedProjects(): BelongsToMany
+    {
+        return $this->projects()->wherePivot('role', 'manager');
+    }
+
+    public function memberProjects(): BelongsToMany
+    {
+        return $this->projects()->wherePivot('role', 'member');
+    }
+
     // История активности
     public function taskHistory(): HasMany
     {
@@ -191,7 +210,7 @@ class User extends Authenticatable
         return $this->organizations()->wherePivot('role', 'org_admin');
     }
 
-    public function managedProjects(): BelongsToMany
+    public function managedOrganizations(): BelongsToMany
     {
         return $this->organizations()->wherePivotIn('role', ['org_admin', 'project_manager']);
     }

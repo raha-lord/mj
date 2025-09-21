@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\TaskApiController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\OrganizationUserController;
+use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\SetPasswordController;
 use App\Http\Controllers\TimeLogController;
 use App\Http\Controllers\UserController;
@@ -187,4 +188,32 @@ Route::middleware(['web', 'auth', 'organization:org_admin'])->group(function () 
     
     // Отзыв приглашения через invitation ID
     Route::post('invitations/{invitation}/revoke', [OrganizationInvitationController::class, 'revoke'])->name('api.invitations.revoke');
+});
+
+// =============================================================================
+// PROJECT MEMBERS API ROUTES
+// =============================================================================
+
+// Просмотр участников проектов (доступно всем участникам организации)
+Route::middleware(['web', 'auth', 'organization:member'])->group(function () {
+    // Список участников проекта
+    Route::get('projects/{project}/members', [ProjectMemberController::class, 'index'])->name('api.projects.members.index');
+});
+
+// Управление участниками проектов (только администраторы организации)
+Route::middleware(['web', 'auth', 'organization:org_admin'])->group(function () {
+    // Добавление участника в проект
+    Route::post('projects/{project}/members', [ProjectMemberController::class, 'store'])->name('api.projects.members.store');
+    
+    // Массовое добавление участников в проект
+    Route::post('projects/{project}/members/bulk', [ProjectMemberController::class, 'bulkStore'])->name('api.projects.members.bulk-store');
+    
+    // Обновление роли участника проекта
+    Route::patch('projects/{project}/members/{member}', [ProjectMemberController::class, 'update'])->name('api.projects.members.update');
+    
+    // Удаление участника из проекта
+    Route::delete('projects/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])->name('api.projects.members.destroy');
+    
+    // Получить список доступных пользователей для добавления в проект
+    Route::get('projects/{project}/available-users', [ProjectMemberController::class, 'availableUsers'])->name('api.projects.available-users');
 });

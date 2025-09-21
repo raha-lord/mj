@@ -44,10 +44,12 @@ class ProjectController extends Controller
 
         $search = $request->get('search');
         $status = $request->get('status');
+        $visibility = $request->get('visibility');
         $perPage = $request->get('per_page', 25);
 
         $query = Project::withCount('tasks')
-            ->forOrganization($currentOrganization->id);
+            ->forOrganization($currentOrganization->id)
+            ->accessibleBy($user);
 
         if (!empty($search)) {
             $query->where(function($q) use ($search) {
@@ -60,10 +62,22 @@ class ProjectController extends Controller
             $query->where('status', $status);
         }
 
+        if (!empty($visibility)) {
+            $query->where('visibility', $visibility);
+        }
+
         $projects = $query->latest()->paginate($perPage);
 
+        // Добавляем роль пользователя в каждом проекте
+        $projectsWithRoles = $projects->getCollection()->map(function ($project) use ($user) {
+            $projectArray = $project->toArray();
+            $projectArray['user_role'] = $project->getUserRole($user);
+            $projectArray['can_manage'] = $project->canUserManage($user);
+            return $projectArray;
+        });
+
         return Inertia::render('Projects/Index', [
-            'projects' => $projects->items(),
+            'projects' => $projectsWithRoles,
             'pagination' => [
                 'current_page' => $projects->currentPage(),
                 'per_page' => $projects->perPage(),
@@ -72,6 +86,10 @@ class ProjectController extends Controller
             'currentOrganization' => [
                 'id' => $currentOrganization->id,
                 'name' => $currentOrganization->name,
+            ],
+            'userPermissions' => [
+                'can_create_projects' => $user->isSuperUser() || 
+                    in_array($user->getOrganizationRole($currentOrganization->id), ['org_admin', 'project_manager'])
             ],
             'needsOrganization' => false,
         ]);
@@ -94,7 +112,9 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'status' => ['required', 'in:active,inactive,completed']
+            'status' => ['required', 'in:active,inactive,completed'],
+            'visibility' => ['required', 'in:public,private'],
+            'access_description' => ['nullable', 'string', 'max:1000'],
         ]);
 
         // Автоматически добавляем organization_id
@@ -121,7 +141,9 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'status' => ['required', 'in:active,inactive,completed']
+            'status' => ['required', 'in:active,inactive,completed'],
+            'visibility' => ['sometimes', 'in:public,private'],
+            'access_description' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $project->update($validated);

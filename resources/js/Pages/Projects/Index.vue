@@ -5,7 +5,11 @@
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
           Проекты
         </h2>
-        <a-button type="primary" @click="openCreateModal">
+        <a-button 
+          v-if="userPermissions.can_create_projects" 
+          type="primary" 
+          @click="openCreateModal"
+        >
           <template #icon>
             <PlusOutlined />
           </template>
@@ -32,7 +36,7 @@
               </a-input>
             </a-col>
             
-            <a-col :xs="24" :md="8">
+            <a-col :xs="24" :md="6">
               <a-select
                 v-model:value="filters.status"
                 placeholder="Все статусы"
@@ -43,6 +47,19 @@
                 <a-select-option value="active">Активный</a-select-option>
                 <a-select-option value="inactive">Неактивный</a-select-option>
                 <a-select-option value="completed">Завершен</a-select-option>
+              </a-select>
+            </a-col>
+
+            <a-col :xs="24" :md="6">
+              <a-select
+                v-model:value="filters.visibility"
+                placeholder="Все типы"
+                allow-clear
+                style="width: 100%"
+                @change="applyFilters"
+              >
+                <a-select-option value="public">Публичные</a-select-option>
+                <a-select-option value="private">Приватные</a-select-option>
               </a-select>
             </a-col>
             
@@ -75,7 +92,40 @@
             <template #bodyCell="{ column, record }">
               <template v-if="column.key === 'name'">
                 <div>
-                  <div class="font-medium">{{ record.name }}</div>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-medium">{{ record.name }}</span>
+                    
+                    <!-- Бейдж приватности -->
+                    <a-tag 
+                      v-if="record.visibility === 'private'" 
+                      color="orange" 
+                      size="small"
+                    >
+                      <LockOutlined class="mr-1" />
+                      Приватный
+                    </a-tag>
+                    
+                    <!-- Бейдж роли пользователя -->
+                    <a-tag 
+                      v-if="record.user_role" 
+                      :color="getRoleColor(record.user_role)" 
+                      size="small"
+                    >
+                      <component :is="getRoleIcon(record.user_role)" class="mr-1" />
+                      {{ getRoleLabel(record.user_role) }}
+                    </a-tag>
+                    
+                    <!-- Бейдж для админов организации (если нет роли в проекте) -->
+                    <a-tooltip 
+                      v-else-if="record.can_manage && !record.user_role" 
+                      title="Администратор организации"
+                      placement="top"
+                    >
+                      <a-tag color="purple" size="small" class="cursor-help">
+                        <CrownOutlined />
+                      </a-tag>
+                    </a-tooltip>
+                  </div>
                   <div class="text-sm text-gray-500" v-if="record.description">
                     {{ record.description.substring(0, 100) }}{{ record.description.length > 100 ? '...' : '' }}
                   </div>
@@ -94,16 +144,53 @@
               
               <template v-else-if="column.key === 'actions'">
                 <a-space>
-                  <a-button type="link" size="small" @click="viewProject(record.id)">
-                    Просмотр
-                  </a-button>
-                  <a-button type="link" size="small" @click="editProject(record.id)">
-                    Редактировать
-                  </a-button>
-                  <a-button type="link" size="small" danger @click="deleteProject(record.id)">
-                    Удалить
-                  </a-button>
+                  <!-- Просмотр доступен всем кто может видеть проект -->
+                  <a-tooltip title="Просмотр проекта">
+                    <a-button 
+                      type="text" 
+                      size="small" 
+                      @click="viewProject(record.id)"
+                      class="flex items-center justify-center"
+                    >
+                      <EyeOutlined class="text-blue-500" />
+                    </a-button>
+                  </a-tooltip>
+                  
+                  <!-- Редактирование только для тех кто может управлять проектом -->
+                  <a-tooltip v-if="record.can_manage" title="Редактировать проект">
+                    <a-button 
+                      type="text" 
+                      size="small" 
+                      @click="editProject(record.id)"
+                      class="flex items-center justify-center"
+                    >
+                      <EditOutlined class="text-green-500" />
+                    </a-button>
+                  </a-tooltip>
+                  
+                  <!-- Удаление только для тех кто может управлять проектом -->
+                  <a-tooltip v-if="record.can_manage" title="Удалить проект">
+                    <a-button 
+                      type="text" 
+                      size="small" 
+                      @click="deleteProject(record.id)"
+                      class="flex items-center justify-center"
+                    >
+                      <DeleteOutlined class="text-red-500" />
+                    </a-button>
+                  </a-tooltip>
                 </a-space>
+              </template>
+              
+              <template v-else-if="column.key === 'created_at'">
+                <div class="text-sm">
+                  <div class="font-medium text-gray-900">
+                    {{ formatDate(record.created_at) }}
+                  </div>
+                  <div class="text-gray-500">
+                    {{ formatTime(record.created_at) }}
+                  </div>
+                </div>
               </template>
             </template>
           </a-table>
@@ -128,7 +215,17 @@ import { ref, computed } from 'vue'
 import { router } from '@inertiajs/vue3'
 import AppLayout from '../../Layouts/AppLayout.vue'
 import ProjectModal from '../../Components/ProjectModal.vue'
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons-vue'
+import { 
+  PlusOutlined, 
+  SearchOutlined, 
+  LockOutlined, 
+  CrownOutlined,
+  UserOutlined,
+  SettingOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined
+} from '@ant-design/icons-vue'
 
 // Props from controller
 const props = defineProps({
@@ -143,6 +240,12 @@ const props = defineProps({
       per_page: 25,
       total: 0
     })
+  },
+  userPermissions: {
+    type: Object,
+    default: () => ({
+      can_create_projects: false
+    })
   }
 })
 
@@ -150,7 +253,8 @@ const props = defineProps({
 const loading = ref(false)
 const filters = ref({
   search: '',
-  status: null
+  status: null,
+  visibility: null
 })
 
 const modalState = ref({
@@ -229,7 +333,8 @@ const applyFilters = () => {
 const clearFilters = () => {
   filters.value = {
     search: '',
-    status: null
+    status: null,
+    visibility: null
   }
   applyFilters()
 }
@@ -298,5 +403,50 @@ const handleModalSubmit = (data) => {
 const deleteProject = (id) => {
   // TODO: Показать подтверждение удаления
   console.log('Delete project', id)
+}
+
+// Вспомогательные методы для ролей
+const getRoleLabel = (role) => {
+  const labels = {
+    member: 'Участник',
+    manager: 'Менеджер'
+  }
+  return labels[role] || role
+}
+
+const getRoleColor = (role) => {
+  const colors = {
+    member: 'blue',
+    manager: 'green'
+  }
+  return colors[role] || 'default'
+}
+
+const getRoleIcon = (role) => {
+  const icons = {
+    member: UserOutlined,
+    manager: SettingOutlined
+  }
+  return icons[role] || UserOutlined
+}
+
+// Методы для форматирования даты
+const formatDate = (dateString) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit', 
+    year: 'numeric'
+  })
+}
+
+const formatTime = (dateString) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 </script>
